@@ -13,7 +13,7 @@
         android:theme="@style/Theme.TimeNestApp"
         tools:targetApi="31">
         <activity
-            android:name=".SplashScreen"
+            android:name=".Activitys.SplashScreen"
             android:exported="true"
             android:label="@string/title_activity_splash_screen"
             android:theme="@style/Theme.TimeNestApp" >
@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".Activitys.MainActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.TimeNestApp">

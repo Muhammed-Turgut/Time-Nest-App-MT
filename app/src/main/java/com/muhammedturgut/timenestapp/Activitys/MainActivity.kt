@@ -1,19 +1,15 @@
-package com.muhammedturgut.timenestapp
+package com.muhammedturgut.timenestapp.Activitys
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,18 +17,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.muhammedturgut.timenestapp.ModelClass.BottomNavigationItem
+import com.muhammedturgut.timenestapp.R
+import com.muhammedturgut.timenestapp.Screens.ToDoScreen
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 import com.muhammedturgut.timenestapp.ui.theme.selectedIconColor
 
-data class BottomNavigationItem(
-    val title: String,
-    val selectedIcon: Int,
-    val unSelectedIcon: Int,
-    val route: String,
-    val hasNews: Boolean,
-    val badgeCount: Int? = null
-)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,70 +31,56 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TimeNestAppTheme {
-                val navController = rememberNavController()
+                val navControllerBottom = rememberNavController()
                 Surface {
                     Scaffold(
                         bottomBar = {
-                            NavigationBottomBar(navController)
+                            NavigationBottomBar(navControllerBottom)
                         },
                         content = { paddingValues ->
-                            NavigationHost(navController, Modifier.padding(paddingValues))
+                            NavigationHost(navControllerBottom, Modifier.padding(paddingValues))
                         }
                     )
                 }
             }
         }
+
+
     }
+
 }
 
+//Ekranlar Arası geçişler burda sağlanıyor.
 @Composable
 fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(navController, startDestination = "todo", modifier = modifier) {
+    NavHost(navController,
+        startDestination = "todo",
+        modifier = modifier) {
         composable("todo") { TodoScreen() }
         composable("calendar") { CalendarScreen() }
         composable("timer") { TimerScreen() }
     }
 }
 
+//yapılacaklar ekranı
 @Composable
 fun TodoScreen() {
-    ScreenContent("Yapılacaklar Ekranı")
+   val topNavigationBar= rememberNavController()
+   ToDoScreen(navController=topNavigationBar)
 }
 
+//Takvim ekranı
 @Composable
 fun CalendarScreen() {
-    ScreenContent("Takvim Ekranı")
+    com.muhammedturgut.timenestapp.Screens.CalendarScreen()
 }
 
+//Zamanlayıcı ekranı
 @Composable
 fun TimerScreen() {
-    ScreenContent("Zamanlayıcı Ekranı")
+    com.muhammedturgut.timenestapp.Screens.TimerScreen()
 }
 
-@Composable
-fun ScreenContent(text: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Time Nest",
-                fontFamily = FontFamily(Font(R.font.righteousregular)),
-                fontSize = 24.sp,
-                color = Color.Black,
-                modifier = Modifier
-                    .padding(20.dp, 24.dp, 8.dp, 0.dp)
-            )
-
-        }
-    }
-}
 
 @Composable
 fun NavigationBottomBar(navController: NavHostController) {
