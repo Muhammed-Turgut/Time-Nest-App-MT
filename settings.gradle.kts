@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Time Nest App"
 include(":app")
- 

@@ -28,14 +28,7 @@ fun CalendarScreen(){
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Time Nest",
-                fontFamily = FontFamily(Font(R.font.righteousregular)),
-                fontSize = 24.sp,
-                color = Color.Black,
-                modifier = Modifier
-                    .padding(20.dp, 24.dp, 8.dp, 0.dp)
-            )
+
 
         }
     }

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -69,4 +70,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation ("androidx.navigation:navigation-compose:2.8.7-alpha10")
+
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha")
+
+    val room_Version = "2.6.1"
+
+    //Room Data Base için kullanılan kütüphaneler.
+    implementation("androidx.room:room-runtime:$room_Version")
+    annotationProcessor("androidx.room:room-compiler:$room_Version")
+    ksp("androidx.room:room-compiler:$room_Version")
+
+    implementation("androidx.room:room-ktx:$room_Version")
+
+    //MVVM mimarisi için
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 }

@@ -15,5 +15,8 @@ val selectedIconColor =Color(0xFF2F515C)
 val ligthGray =Color(0xFFF4F4F4)
 val ligthGray2 =Color(0xFFB4B4B4)
 val navTopSelectedColor =Color(0xFFB4B4B4)
+val GolasRowColor =Color(0xFFF1F7FA)
+
+val GolasRowColorText =Color(0xFF3E4B54)
 val transparan=Color(0x00FFFFFF)
 

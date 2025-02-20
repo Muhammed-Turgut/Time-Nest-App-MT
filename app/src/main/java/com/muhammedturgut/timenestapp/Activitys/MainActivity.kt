@@ -4,11 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -17,28 +22,58 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.muhammedturgut.timenestapp.ModelClass.BottomNavigationItem
+import com.muhammedturgut.timenestapp.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.Screens.ToDoScreen
+import com.muhammedturgut.timenestapp.ViewModel.GolasMissionViewModel
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 import com.muhammedturgut.timenestapp.ui.theme.selectedIconColor
 
 
 class MainActivity : ComponentActivity() {
+    private val viewModel:GolasMissionViewModel by viewModels<GolasMissionViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+println("Uygulama Çalıştı")
+
         setContent {
             TimeNestAppTheme {
                 val navControllerBottom = rememberNavController()
-                Surface {
-                    Scaffold(
+                Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                    Scaffold(modifier = Modifier.background(Color.White).fillMaxSize(),
                         bottomBar = {
                             NavigationBottomBar(navControllerBottom)
                         },
                         content = { paddingValues ->
-                            NavigationHost(navControllerBottom, Modifier.padding(paddingValues))
+
+
+                            NavHost(navControllerBottom,
+                                startDestination = "todo",
+                                modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                                composable("todo") {
+
+                                    viewModel.getItemList()
+                                    val itemList by remember {
+                                        println("get list")
+                                        viewModel.itemList
+                                    }
+
+                                    TodoScreen(itemList){item ->
+                                           println("Save")
+                                        viewModel.saveItem(item)
+                                    }
+
+
+
+                                }
+                                composable("calendar") { CalendarScreen() }
+                                composable("timer") { TimerScreen() }
+                            }
                         }
                     )
                 }
@@ -53,20 +88,14 @@ class MainActivity : ComponentActivity() {
 //Ekranlar Arası geçişler burda sağlanıyor.
 @Composable
 fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(navController,
-        startDestination = "todo",
-        modifier = modifier) {
-        composable("todo") { TodoScreen() }
-        composable("calendar") { CalendarScreen() }
-        composable("timer") { TimerScreen() }
-    }
+
 }
 
 //yapılacaklar ekranı
 @Composable
-fun TodoScreen() {
+fun TodoScreen(item: List<Item>,saveFunction: (item:Item ) -> Unit) {
    val topNavigationBar= rememberNavController()
-   ToDoScreen(navController=topNavigationBar)
+   ToDoScreen(navController=topNavigationBar,item,saveFunction)
 }
 
 //Takvim ekranı
@@ -84,6 +113,13 @@ fun TimerScreen() {
 
 @Composable
 fun NavigationBottomBar(navController: NavHostController) {
+
+    val systemUiController = rememberSystemUiController()
+
+    LaunchedEffect(Unit) {
+        systemUiController.setNavigationBarColor(PrimaryColor) // veya Color.Transparent
+    }
+
     val items = listOf(
         BottomNavigationItem(
             title = "Yapılacaklar",
@@ -110,7 +146,11 @@ fun NavigationBottomBar(navController: NavHostController) {
     )
 
     var selectedItemIndex by remember { mutableStateOf(0) }
-    NavigationBar(containerColor = PrimaryColor) {
+    NavigationBar(
+             containerColor = PrimaryColor,
+             modifier = Modifier
+            .background(Color.White),
+    ) {
         items.forEachIndexed { index, item ->
             NavigationBarItem(
                 selected = selectedItemIndex == index,
@@ -125,7 +165,7 @@ fun NavigationBottomBar(navController: NavHostController) {
                     }
                 },
                 label = {
-                    Text(text = item.title, fontSize = 12.sp)
+                    Text(text = item.title, fontSize = 12.sp, color = Color.White)
                 },
                 alwaysShowLabel = false,
                 icon = {
@@ -141,7 +181,7 @@ fun NavigationBottomBar(navController: NavHostController) {
                         Image(
                             painter = painterResource(id = if (selectedItemIndex == index) item.selectedIcon else item.unSelectedIcon),
                             contentDescription = item.title,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 },
@@ -158,6 +198,6 @@ fun NavigationBottomBar(navController: NavHostController) {
 @Composable
 fun GreetingPreview() {
     TimeNestAppTheme {
-        TodoScreen()
+
     }
 }
