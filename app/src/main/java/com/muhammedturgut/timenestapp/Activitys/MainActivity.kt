@@ -34,86 +34,69 @@ import com.muhammedturgut.timenestapp.ui.theme.selectedIconColor
 
 
 class MainActivity : ComponentActivity() {
-    private val viewModel:GolasMissionViewModel by viewModels<GolasMissionViewModel>()
+    private val viewModel: GolasMissionViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-println("Uygulama Çalıştı")
-
+        
         setContent {
             TimeNestAppTheme {
                 val navControllerBottom = rememberNavController()
-                Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
-                    Scaffold(modifier = Modifier.background(Color.White).fillMaxSize(),
-                        bottomBar = {
-                            NavigationBottomBar(navControllerBottom)
-                        },
-                        content = { paddingValues ->
-
-
-                            NavHost(navControllerBottom,
-                                startDestination = "todo",
-                                modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-                                composable("todo") {
-
-                                    viewModel.getItemList()
-                                    val itemList by remember {
-                                        println("get list")
-                                        viewModel.itemList
-                                    }
-
-                                    TodoScreen(itemList){item ->
-                                           println("Save")
-                                        viewModel.saveItem(item)
-                                    }
-
-
-
-                                }
-                                composable("calendar") { CalendarScreen() }
-                                composable("timer") { TimerScreen() }
+                
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        NavigationBottomBar(navControllerBottom)
+                    }
+                ) { paddingValues ->
+                    NavHost(
+                        navController = navControllerBottom,
+                        startDestination = "todo",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        composable("todo") {
+                            LaunchedEffect(Unit) {
+                                viewModel.getItemList()
+                            }
+                            val itemList by viewModel.itemList.collectAsState(initial = emptyList())
+                            TodoScreen(itemList) { item ->
+                                viewModel.saveItem(item)
                             }
                         }
-                    )
+                        composable("calendar") { CalendarScreen() }
+                        composable("timer") { TimerScreen() }
+                    }
                 }
             }
         }
-
-
     }
-
 }
 
-//Ekranlar Arası geçişler burda sağlanıyor.
 @Composable
-fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifier) {
-
+fun TodoScreen(item: List<Item>, saveFunction: (Item) -> Unit) {
+    val topNavigationBar = rememberNavController()
+    ToDoScreen(
+        navController = topNavigationBar,
+        item = item,
+        saveFunction = saveFunction
+    )
 }
 
-//yapılacaklar ekranı
-@Composable
-fun TodoScreen(item: List<Item>,saveFunction: (item:Item ) -> Unit) {
-   val topNavigationBar= rememberNavController()
-   ToDoScreen(navController=topNavigationBar,item,saveFunction)
-}
-
-//Takvim ekranı
 @Composable
 fun CalendarScreen() {
     com.muhammedturgut.timenestapp.Screens.CalendarScreen()
 }
 
-//Zamanlayıcı ekranı
 @Composable
 fun TimerScreen() {
     com.muhammedturgut.timenestapp.Screens.TimerScreen()
 }
 
-
 @Composable
 fun NavigationBottomBar(navController: NavHostController) {
-
     val systemUiController = rememberSystemUiController()
 
     LaunchedEffect(Unit) {

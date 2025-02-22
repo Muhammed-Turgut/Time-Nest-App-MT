@@ -30,69 +30,42 @@ import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 
 @Composable
-fun GoalsScreen(initialItemList: List<Item>, saveFunction: (item: Item) -> Unit) {
+fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
-    var itemList by remember { mutableStateOf(initialItemList) }
-    var isLoading by remember { mutableStateOf(true) }
 
-
-
-
-        // Simulate data loading delay
-        LaunchedEffect(Unit) {
-            delay(3000) // 3 seconds delay
-            isLoading = false
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(item) { currentItem ->
+                GoalsROW(item = currentItem)
+            }
         }
 
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {},
-            floatingActionButtonPosition = FabPosition.End,
-            floatingActionButton = {
-                FAB {
-                    showDialog = true
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            FAB { showDialog = true }
+        }
+
+        if (showDialog) {
+            CustomDialog(
+                onDismiss = { showDialog = false },
+                saveFunction = { newItem ->
+                    saveFunction(newItem)
+                    showDialog = false
                 }
-            },
-            containerColor = Color.White,
-            content = { innerPadding ->
-                if (isLoading) {
-                    // Show loading indicator
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = PrimaryColor)
-                    }
-                } else {
-                    // Show LazyColumn with items
-                    LazyColumn(
-                        contentPadding = innerPadding,
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .background(Color.White)
-                    ) {
-                        items(itemList) { item ->
-                            GoalsROW(item = item)
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                }
-            }
-        )
-
-
-
-    if (showDialog) {
-        CustomDialog(onDismiss = { showDialog = false }, saveFunction = { item ->
-            itemList = itemList + item // itemList'i güncelleyin
-            saveFunction(item)
-            showDialog = false
-        })
-
-
+            )
+        }
     }
 }
 
@@ -176,22 +149,12 @@ fun GoalsROW(item: Item) {
 }
 
 @Composable
-fun FAB(onClick: () -> Unit) {
-    FloatingActionButton(
-        onClick = onClick,
-        containerColor = PrimaryColor
-    ) {
-        Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White)
-    }
-}
+fun CustomDialog(onDismiss: () -> Unit, saveFunction: (Item) -> Unit) {
+    var itemName by remember { mutableStateOf("") }
+    var startTime by remember { mutableStateOf("") }
+    var endTime by remember { mutableStateOf("") }
 
-@Composable
-fun CustomDialog(onDismiss: () -> Unit, saveFunction: (item: Item) -> Unit) {
-    val itemName = remember { mutableStateOf("") }
-    val startTime = remember { mutableStateOf("") }
-    val endTime = remember { mutableStateOf("") }
-
-    Dialog(onDismissRequest = { onDismiss() }) {
+    Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -202,34 +165,69 @@ fun CustomDialog(onDismiss: () -> Unit, saveFunction: (item: Item) -> Unit) {
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                TextField(
-                    value = itemName.value,
-                    placeholder = { Text(text = "Görev") },
-                    onValueChange = { itemName.value = it }
+                OutlinedTextField(
+                    value = itemName,
+                    onValueChange = { itemName = it },
+                    label = { Text("Görev Adı") },
+                    modifier = Modifier.fillMaxWidth()
                 )
-                TextField(
-                    value = startTime.value,
-                    placeholder = { Text(text = "Başlama Tarihi") },
-                    onValueChange = { startTime.value = it }
+
+                OutlinedTextField(
+                    value = startTime,
+                    onValueChange = { startTime = it },
+                    label = { Text("Başlama Tarihi") },
+                    modifier = Modifier.fillMaxWidth()
                 )
-                TextField(
-                    value = endTime.value,
-                    placeholder = { Text(text = "Bitiş Tarihi") },
-                    onValueChange = { endTime.value = it }
+
+                OutlinedTextField(
+                    value = endTime,
+                    onValueChange = { endTime = it },
+                    label = { Text("Bitiş Tarihi") },
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Button(onClick = {
-                    val itemToInsert = Item(
-                        missionName = itemName.value,
-                        startTime = startTime.value,
-                        endTime = endTime.value
-                    )
-                    saveFunction(itemToInsert)
-                }) {
-                    Text(text = "Save")
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                    ) {
+                        Text("İptal")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (itemName.isNotBlank()) {
+                                saveFunction(
+                                    Item(
+                                        missionName = itemName,
+                                        startTime = startTime,
+                                        endTime = endTime
+                                    )
+                                )
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                    ) {
+                        Text("Kaydet")
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun FAB(onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = PrimaryColor
+    ) {
+        Icon(Icons.Filled.Add, contentDescription = "Add", tint = Color.White)
     }
 }
