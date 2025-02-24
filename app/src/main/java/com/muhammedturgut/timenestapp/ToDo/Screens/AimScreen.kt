@@ -1,4 +1,4 @@
-package com.muhammedturgut.timenestapp.Screens
+package com.muhammedturgut.timenestapp.ToDo.Screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.muhammedturgut.timenestapp.ModelClass.Item
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.GolasRowColor
 import com.muhammedturgut.timenestapp.ui.theme.GolasRowColorText
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
@@ -47,7 +48,7 @@ fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (It
      ) {
          items(item) { currentItem ->
 
-             GoalsROW(currentItem, UpdateFuncition,deleteItem)
+             GoalsROW(item=currentItem, UpdateFuncition,deleteItem)
 
 
          }
@@ -62,7 +63,14 @@ fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 2.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(8.dp),
+                spotColor = Color.Gray.copy(alpha = 2.0f),
+                ambientColor = Color.Black,
+                clip = false
+            )
             .clip(RoundedCornerShape(8.dp))
             .background(GolasRowColor)
             .height(80.dp)

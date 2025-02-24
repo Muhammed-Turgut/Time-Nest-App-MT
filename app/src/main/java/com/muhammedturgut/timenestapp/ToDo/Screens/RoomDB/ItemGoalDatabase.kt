@@ -1,10 +1,10 @@
-package com.muhammedturgut.timenestapp.RoomDB
+package com.muhammedturgut.timenestapp.ToDo.Screens.RoomDB
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.muhammedturgut.timenestapp.ModelClass.Item
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 
 @Database(entities = [Item::class], version = 2)
 abstract class ItemGoalDatabase : RoomDatabase() {

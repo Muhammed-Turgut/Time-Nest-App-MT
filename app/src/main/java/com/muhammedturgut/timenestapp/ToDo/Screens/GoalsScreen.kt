@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -25,15 +26,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
-import com.muhammedturgut.timenestapp.ModelClass.Item
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.GolasRowColor
 import com.muhammedturgut.timenestapp.ui.theme.GolasRowColorText
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 
 @Composable
-fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
+fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(item) {
+        println("GoalsScreen'e gelen veri sayısı: ${item.size}")
+    }
 
     Box(
         modifier = Modifier
@@ -46,10 +51,11 @@ fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit,UpdateFuncition: 
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(item) { currentItem ->
-
-                    GoalsROW(item = currentItem,UpdateFuncition,deleteItem)
-
-
+                GoalsROW(
+                    item = currentItem,
+                    UpdateFuncition = UpdateFuncition,
+                    deleteItem = deleteItem
+                )
             }
         }
 
@@ -76,22 +82,28 @@ fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit,UpdateFuncition: 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GoalsROW(item: Item,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
+fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 2.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(8.dp),
+                spotColor = Color.Gray.copy(alpha = 2.0f),
+                ambientColor = Color.Black,
+                clip = false
+            )
             .clip(RoundedCornerShape(8.dp))
             .background(GolasRowColor)
             .height(80.dp)
             .combinedClickable(
-            onClick = {},
-            onLongClick = {
-
-                item.State=0
-                UpdateFuncition(item)
-            }
-        )
+                onClick = {},
+                onLongClick = {
+                    item.State = 0
+                    UpdateFuncition(item)
+                }
+            )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

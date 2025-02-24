@@ -8,11 +8,9 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -23,11 +21,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.muhammedturgut.timenestapp.ModelClass.BottomNavigationItem
-import com.muhammedturgut.timenestapp.ModelClass.Item
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.BottomNavigationItem
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
-import com.muhammedturgut.timenestapp.Screens.ToDoScreen
-import com.muhammedturgut.timenestapp.ViewModel.GolasMissionViewModel
+import com.muhammedturgut.timenestapp.ToDo.Screens.ToDoScreen
+import com.muhammedturgut.timenestapp.ToDo.Screens.ViewModel.GolasMissionViewModel
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 import com.muhammedturgut.timenestapp.ui.theme.selectedIconColor
@@ -68,11 +66,26 @@ class MainActivity : ComponentActivity() {
                             }
                             val itemListAim by viewModel.itemListAim.collectAsState(initial = emptyList())
 
-
-                            TodoScreen(itemList,itemListAim,
-                                saveFunction = {item: Item -> viewModel.saveItem(item)},
-                                UpdateFuncition = {item:Item -> viewModel.updateItem(item)},
-                                deleteItem = {item: Item ->  viewModel.deleteItem(item)})
+                            TodoScreen(
+                                itemList,
+                                itemListAim,
+                                saveFunction = { item -> 
+                                    viewModel.saveItem(item)
+                                },
+                                UpdateFuncition = { item -> 
+                                    viewModel.updateItem(item)
+                                },
+                                deleteItem = { item ->  
+                                    viewModel.deleteItem(item)
+                                },
+                                onTabSelected = { route -> 
+                                    if (route == "tamamlandi") {
+                                        viewModel.getItemListAim()
+                                    } else {
+                                        viewModel.getItemList()
+                                    }
+                                }
+                            )
                         }
                         composable("calendar") { CalendarScreen() }
                         composable("timer") { TimerScreen() }
@@ -84,7 +97,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TodoScreen(item: List<Item>, itemAim: List<Item>,saveFunction: (Item) -> Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
+fun TodoScreen(item: List<Item>, itemAim: List<Item>, saveFunction: (Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit, onTabSelected: (String) -> Unit) {
     val topNavigationBar = rememberNavController()
     ToDoScreen(
         navController = topNavigationBar,
@@ -92,18 +105,19 @@ fun TodoScreen(item: List<Item>, itemAim: List<Item>,saveFunction: (Item) -> Uni
         itemAim,
         saveFunction = saveFunction,
         UpdateFuncition,
-        deleteItem
+        deleteItem,
+        onTabSelected
     )
 }
 
 @Composable
 fun CalendarScreen() {
-    com.muhammedturgut.timenestapp.Screens.CalendarScreen()
+    com.muhammedturgut.timenestapp.CalendarScreen()
 }
 
 @Composable
 fun TimerScreen() {
-    com.muhammedturgut.timenestapp.Screens.TimerScreen()
+    com.muhammedturgut.timenestapp.TimerScreen()
 }
 
 @Composable

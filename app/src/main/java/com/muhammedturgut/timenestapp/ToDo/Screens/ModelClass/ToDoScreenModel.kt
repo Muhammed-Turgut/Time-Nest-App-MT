@@ -1,4 +1,4 @@
-package com.muhammedturgut.timenestapp.ModelClass
+package com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass
 
 data class ToDoScreenModelContinues(
      val Duty:String,

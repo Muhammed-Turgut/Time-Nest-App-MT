@@ -1,4 +1,4 @@
-package com.muhammedturgut.timenestapp.ModelClass
+package com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

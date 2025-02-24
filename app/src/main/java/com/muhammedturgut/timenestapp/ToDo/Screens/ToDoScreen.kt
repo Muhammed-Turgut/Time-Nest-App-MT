@@ -1,4 +1,4 @@
-package com.muhammedturgut.timenestapp.Screens
+package com.muhammedturgut.timenestapp.ToDo.Screens
 
 import GoalsScreen
 import androidx.compose.foundation.background
@@ -28,14 +28,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.muhammedturgut.timenestapp.ModelClass.Item
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
-import com.muhammedturgut.timenestapp.ViewModel.GolasMissionViewModel
 import com.muhammedturgut.timenestapp.ui.theme.ligthGray
 import com.muhammedturgut.timenestapp.ui.theme.ligthGray2
 import com.muhammedturgut.timenestapp.ui.theme.navTopSelectedColor
@@ -45,7 +42,15 @@ import com.muhammedturgut.timenestapp.ui.theme.transparan
 
 
 @Composable
-fun ToDoScreen(navController: NavHostController,item: List<Item>,itemAim: List<Item>,saveFunction : (item:Item ) ->Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
+fun ToDoScreen(
+    navController: NavHostController,
+    item: List<Item>,
+    itemAim: List<Item>,
+    saveFunction: (Item) -> Unit,
+    UpdateFuncition: (Item) -> Unit,
+    deleteItem: (Item) -> Unit,
+    onTabSelected: (String) -> Unit
+) {
 
     Box(
         modifier = Modifier
@@ -69,14 +74,17 @@ fun ToDoScreen(navController: NavHostController,item: List<Item>,itemAim: List<I
 
             }
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                NavigationTopBar(navController = navController) // Navigation bar'ı burada çağırıyoruz
+                NavigationTopBar(
+                    navController = navController,
+                    onTabSelected = onTabSelected
+                )
             }
 
 
                 // Navigation graph'ını burada oluşturuyoruz.
                 NavHost(navController = navController, startDestination = "devam_ediyor") {
-                    composable("devam_ediyor") { Golas(item,saveFunction,UpdateFuncition,deleteItem) }
-                    composable("tamamlandi") { Aim(itemAim,UpdateFuncition,deleteItem) }
+                    composable("devam_ediyor") { Golas(item, saveFunction, UpdateFuncition, deleteItem) }
+                    composable("tamamlandi") { Aim(itemAim, UpdateFuncition, deleteItem) }
                 }
 
 
@@ -85,7 +93,10 @@ fun ToDoScreen(navController: NavHostController,item: List<Item>,itemAim: List<I
 }
 
 @Composable
-fun NavigationTopBar(navController: NavHostController) {
+fun NavigationTopBar(
+    navController: NavHostController,
+    onTabSelected: (String) -> Unit
+) {
     val itemList = listOf(
         CategoriHostItem("Hedefler", "devam_ediyor"),
         CategoriHostItem("Başarılar", "tamamlandi")
@@ -104,10 +115,11 @@ fun NavigationTopBar(navController: NavHostController) {
         itemList.forEach { item ->
             Text(
                 modifier = Modifier
-                    .width( if(item.route == selectedTab) 130.dp else 100.dp)
+                    .width(if(item.route == selectedTab) 130.dp else 100.dp)
                     .clickable {
                         navController.navigate(item.route)
                         selectedTab = item.route
+                        onTabSelected(item.route)
                     }
                     .padding(6.dp)
                     .clip(if (item.route == selectedTab) RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp))
@@ -124,7 +136,7 @@ fun NavigationTopBar(navController: NavHostController) {
 }
 
 @Composable
-fun Golas(item: List<Item>,saveFunction: (item:Item ) -> Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
+fun Golas(item: List<Item>, saveFunction: (item: Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
 
     println("Golas Screen")
 
