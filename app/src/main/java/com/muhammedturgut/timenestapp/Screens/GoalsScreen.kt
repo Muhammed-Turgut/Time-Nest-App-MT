@@ -1,7 +1,9 @@
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,7 +32,7 @@ import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 
 @Composable
-fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit) {
+fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -44,7 +46,10 @@ fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(item) { currentItem ->
-                GoalsROW(item = currentItem)
+
+                    GoalsROW(item = currentItem,UpdateFuncition,deleteItem)
+
+
             }
         }
 
@@ -69,8 +74,9 @@ fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GoalsROW(item: Item) {
+fun GoalsROW(item: Item,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -78,6 +84,14 @@ fun GoalsROW(item: Item) {
             .clip(RoundedCornerShape(8.dp))
             .background(GolasRowColor)
             .height(80.dp)
+            .combinedClickable(
+            onClick = {},
+            onLongClick = {
+
+                item.State=0
+                UpdateFuncition(item)
+            }
+        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -102,7 +116,7 @@ fun GoalsROW(item: Item) {
                     .padding(end = 10.dp)
                     .align(Alignment.CenterVertically)
                     .clickable {
-                        // item silme bildirimi
+                        deleteItem(item)
                     }
             )
         }
@@ -207,7 +221,8 @@ fun CustomDialog(onDismiss: () -> Unit, saveFunction: (Item) -> Unit) {
                                     Item(
                                         missionName = itemName,
                                         startTime = startTime,
-                                        endTime = endTime
+                                        endTime = endTime,
+                                        State = 1
                                     )
                                 )
                             }

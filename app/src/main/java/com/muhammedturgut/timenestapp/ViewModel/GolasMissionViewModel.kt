@@ -14,8 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class GolasMissionViewModel(application: Application): AndroidViewModel(application){
-
+class GolasMissionViewModel(application: Application): AndroidViewModel(application) {
     private val db = Room.databaseBuilder(
         getApplication(),
         ItemGoalDatabase::class.java, 
@@ -26,35 +25,85 @@ class GolasMissionViewModel(application: Application): AndroidViewModel(applicat
 
     private val itemGoalDao = db.itemGoalDao()
     private val _itemList = MutableStateFlow<List<Item>>(emptyList())
+    private val _itemListAim = MutableStateFlow<List<Item>>(emptyList())
+    val itemListAim:StateFlow<List<Item>> = _itemListAim
     val itemList: StateFlow<List<Item>> = _itemList
-    val selectedItem = mutableStateOf<Item>(Item("","",""))
+    val selectedItem = mutableStateOf<Item>(Item("","","",1))
 
-    init{
+
+    init {
         getItemList()
     }
 
-    fun getItemList(){
-        viewModelScope.launch (Dispatchers.IO){
-            val items = itemGoalDao.getItemWithNameAndId()
+    fun getItemList() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val items = itemGoalDao.GolasScreenData()
             _itemList.value = items
-        }
-    }
 
-    fun getItem(id:Int){
-        viewModelScope.launch (Dispatchers.IO){
-            val item=itemGoalDao.getItemById(id)
-            item?.let {
-                selectedItem.value = it
-            }
+            val filteredItems = items.filter { it.State != 1 }
+            _itemList.value = filteredItems
+
         }
     }
 
     fun saveItem(item: Item) {
         viewModelScope.launch(Dispatchers.IO) {
             itemGoalDao.insert(item)
-            // Veri eklendikten sonra listeyi güncelle
-            val updatedItems = itemGoalDao.getItemWithNameAndId()
+            val updatedItems = itemGoalDao.GolasScreenData()
             _itemList.value = updatedItems
+        }
+    }
+
+    fun deleteItem(item: Item) {
+        viewModelScope.launch(Dispatchers.IO) {
+            itemGoalDao.delete(item)
+            val updatedItems = itemGoalDao.GolasScreenData()
+            _itemList.value = updatedItems
+        }
+    }
+
+    fun updateItem(item: Item) {
+        viewModelScope.launch(Dispatchers.IO) {
+            itemGoalDao.update(item)
+            val updatedItems = itemGoalDao.GolasScreenData()
+            _itemList.value = updatedItems
+        }
+    }
+
+
+
+    fun getItemListAim() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val items = itemGoalDao.AimScreenData()
+            _itemListAim.value = items
+
+            val filteredItems = items.filter { it.State != 1 }
+            _itemListAim.value = filteredItems
+
+        }
+    }
+
+    fun saveItemAim(item: Item) {
+        viewModelScope.launch(Dispatchers.IO) {
+            itemGoalDao.insert(item)
+            val updatedItems = itemGoalDao.AimScreenData()
+            _itemListAim.value = updatedItems
+        }
+    }
+
+    fun deleteItemAaim(item: Item) {
+        viewModelScope.launch(Dispatchers.IO) {
+            itemGoalDao.delete(item)
+            val updatedItems = itemGoalDao.AimScreenData()
+            _itemListAim.value = updatedItems
+        }
+    }
+
+    fun updateItemAim(item: Item) {
+        viewModelScope.launch(Dispatchers.IO) {
+            itemGoalDao.update(item)
+            val updatedItems = itemGoalDao.AimScreenData()
+            _itemListAim.value = updatedItems
         }
     }
 }

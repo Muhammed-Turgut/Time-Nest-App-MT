@@ -45,7 +45,7 @@ import com.muhammedturgut.timenestapp.ui.theme.transparan
 
 
 @Composable
-fun ToDoScreen(navController: NavHostController,item: List<Item>,saveFunction : (item:Item ) ->Unit) {
+fun ToDoScreen(navController: NavHostController,item: List<Item>,itemAim: List<Item>,saveFunction : (item:Item ) ->Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
 
     Box(
         modifier = Modifier
@@ -75,8 +75,8 @@ fun ToDoScreen(navController: NavHostController,item: List<Item>,saveFunction : 
 
                 // Navigation graph'ını burada oluşturuyoruz.
                 NavHost(navController = navController, startDestination = "devam_ediyor") {
-                    composable("devam_ediyor") { Golas(item,saveFunction) }
-                    composable("tamamlandi") { Tamamlandı() }
+                    composable("devam_ediyor") { Golas(item,saveFunction,UpdateFuncition,deleteItem) }
+                    composable("tamamlandi") { Aim(itemAim,UpdateFuncition,deleteItem) }
                 }
 
 
@@ -124,21 +124,16 @@ fun NavigationTopBar(navController: NavHostController) {
 }
 
 @Composable
-fun Golas(item: List<Item>,saveFunction: (item:Item ) -> Unit) {
+fun Golas(item: List<Item>,saveFunction: (item:Item ) -> Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
 
     println("Golas Screen")
 
-    GoalsScreen(item,saveFunction)
+    GoalsScreen(item,saveFunction, UpdateFuncition,deleteItem)
 }
 
 @Composable
-fun Tamamlandı() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Tamamlandı Ekranı", fontSize = 24.sp)
-    }
+fun Aim(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) { //Yapılacakalr ekranınmızın tamamlanan görevlerini içeriyor.
+ AimScreen(item,UpdateFuncition,deleteItem)
 }
 
 data class CategoriHostItem(

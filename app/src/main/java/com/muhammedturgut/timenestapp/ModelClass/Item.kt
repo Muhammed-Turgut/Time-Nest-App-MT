@@ -13,7 +13,10 @@ data class Item(
     val startTime: String?,
 
     @ColumnInfo(name = "end_Time")
-    val endTime: String?
+    val endTime: String?,
+
+    @ColumnInfo(name = "State")
+    var State: Int?
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0

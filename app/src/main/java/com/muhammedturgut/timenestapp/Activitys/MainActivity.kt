@@ -62,9 +62,17 @@ class MainActivity : ComponentActivity() {
                                 viewModel.getItemList()
                             }
                             val itemList by viewModel.itemList.collectAsState(initial = emptyList())
-                            TodoScreen(itemList) { item ->
-                                viewModel.saveItem(item)
+
+                            LaunchedEffect(Unit) {
+                                viewModel.getItemListAim()
                             }
+                            val itemListAim by viewModel.itemListAim.collectAsState(initial = emptyList())
+
+
+                            TodoScreen(itemList,itemListAim,
+                                saveFunction = {item: Item -> viewModel.saveItem(item)},
+                                UpdateFuncition = {item:Item -> viewModel.updateItem(item)},
+                                deleteItem = {item: Item ->  viewModel.deleteItem(item)})
                         }
                         composable("calendar") { CalendarScreen() }
                         composable("timer") { TimerScreen() }
@@ -76,12 +84,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TodoScreen(item: List<Item>, saveFunction: (Item) -> Unit) {
+fun TodoScreen(item: List<Item>, itemAim: List<Item>,saveFunction: (Item) -> Unit,UpdateFuncition: (Item) -> Unit,deleteItem: (Item) -> Unit) {
     val topNavigationBar = rememberNavController()
     ToDoScreen(
         navController = topNavigationBar,
         item = item,
-        saveFunction = saveFunction
+        itemAim,
+        saveFunction = saveFunction,
+        UpdateFuncition,
+        deleteItem
     )
 }
 
