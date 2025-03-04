@@ -9,6 +9,9 @@ data class Item(
     @ColumnInfo(name = "mission_Name")
     val missionName: String?,
 
+    @ColumnInfo(name = "mission_about")
+    val missionAbout: String?,
+
     @ColumnInfo(name = "start_Time")
     val startTime: String?,
 

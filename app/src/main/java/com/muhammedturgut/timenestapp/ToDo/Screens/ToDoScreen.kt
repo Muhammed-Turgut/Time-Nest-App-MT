@@ -1,6 +1,7 @@
 package com.muhammedturgut.timenestapp.ToDo.Screens
 
 import GoalsScreen
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,10 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +38,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
+import com.muhammedturgut.timenestapp.ui.theme.GolaScreenTopBarSelected
 import com.muhammedturgut.timenestapp.ui.theme.ligthGray
 import com.muhammedturgut.timenestapp.ui.theme.ligthGray2
 import com.muhammedturgut.timenestapp.ui.theme.navTopSelectedColor
@@ -55,18 +61,25 @@ fun ToDoScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.onTertiaryContainer)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Column {
+            Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+                .fillMaxWidth()
+                .height(70.dp)
+                .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
+                .background(MaterialTheme.colorScheme.onPrimary)
+
+
+            ) {
                 Text(
-                    text = "Time Nest",
+                    text = "Görevler",
                     fontFamily = FontFamily(Font(R.font.righteousregular)),
                     fontSize = 24.sp,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
                     modifier = Modifier
                         .padding(start = 20.dp, top = 16.dp, bottom = 8.dp), textAlign = TextAlign.Start
                 )
@@ -98,42 +111,73 @@ fun NavigationTopBar(
     onTabSelected: (String) -> Unit
 ) {
     val itemList = listOf(
-        CategoriHostItem("Hedefler", "devam_ediyor"),
-        CategoriHostItem("Başarılar", "tamamlandi")
+        CategoriHostItem(
+            "Hedefler",
+            "devam_ediyor",
+            R.drawable.goalsiconselected,
+            R.drawable.goalsicondefault
+        ),
+        CategoriHostItem(
+            "Tamamlandı",
+            "tamamlandi",
+            R.drawable.aimiconselected,
+            R.drawable.aimicondefualt
+        )
     )
+
+    var selectedTab by remember { mutableStateOf(itemList.first().route) }
 
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(ligthGray)
-            .size(height = 50.dp, width = 230.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .fillMaxWidth()
+            .padding(top = 8.dp) // Top padding for overall row
+            .height(90.dp), // Set a fixed height for the navigation bar
+        horizontalArrangement = Arrangement.SpaceEvenly, // Distribute items evenly
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        var selectedTab by remember { mutableStateOf(itemList.first().route) }
-
         itemList.forEach { item ->
-            Text(
+            // Tab Row
+            Row(
                 modifier = Modifier
-                    .width(if(item.route == selectedTab) 130.dp else 100.dp)
+                    .background(
+                        color = if (selectedTab == item.route) GolaScreenTopBarSelected else MaterialTheme.colorScheme.onTertiaryContainer,
+                        shape = RoundedCornerShape(16.dp)
+                    )
                     .clickable {
                         navController.navigate(item.route)
                         selectedTab = item.route
                         onTabSelected(item.route)
                     }
-                    .padding(6.dp)
-                    .clip(if (item.route == selectedTab) RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp))
-                    .background(if (item.route == selectedTab) navTopSelectedColor else transparan).padding(8.dp),
-                textAlign = TextAlign.Center,
-                text = item.title,
-                fontSize = if (item.route == selectedTab) 18.sp else 14.sp,
-                color = if (item.route == selectedTab) Color.White else ligthGray2,
+                    .padding(vertical = 8.dp, horizontal = 12.dp), // Adjust padding
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center // Center items inside the row
+            ) {
+                // Tab Icon
+                Image(
+                    painter = painterResource(
+                        id = if (item.route == selectedTab) item.selectedIcon else item.unSelectedIcon
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 6.dp) // Space between icon and text
+                        .size(24.dp) // Set a consistent icon size
+                )
 
-            )
+                // Tab Text
+                Text(
+                    text = item.title,
+                    textAlign = TextAlign.Center,
+                    fontSize = if (item.route == selectedTab) 18.sp else 14.sp,
+                    color = if (item.route == selectedTab) Color.White else MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp) // Padding for the text
+                        .widthIn(min = 80.dp) // Ensure minimum width for text alignment
+                )
+            }
         }
-
     }
 }
+
 
 @Composable
 fun Golas(item: List<Item>, saveFunction: (item: Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
@@ -150,5 +194,7 @@ fun Aim(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) ->
 
 data class CategoriHostItem(
     val title: String,
-    val route: String
+    val route: String,
+    val selectedIcon: Int,
+    val unSelectedIcon: Int,
 )

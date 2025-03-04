@@ -12,15 +12,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = PrimaryColorDark,
     secondary = PurpleGrey80,
-    tertiary = Pink80
+    tertiary = Pink80,
+    tertiaryContainer = White, // Navigationbarda seçilen Ekranın hangisi olduğunu yazan yazının rengi
+    onTertiaryContainer = Black,//Navigationbarda seçilen Ekranın seçilem rengi,
+    onPrimary = PageNameDark,// Bu en üste ekran ismini içeren yerin rengi
+    onBackground =GolaScreenTopBarTextColorDark,
+    surfaceTint =GolasRowColorDark //Bu Golas ekranındaki Rowların rengi
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = PrimaryColorWhite,
     secondary = PurpleGrey40,
-    tertiary = Pink40
+    tertiary = Pink40,
+    tertiaryContainer = Black, // Navigationbarda seçilen Ekranın hangisi olduğunu yazan yazının rengi
+    onTertiaryContainer = White,//Navigationbarda seçilen Ekranın seçilem rengi,
+    onPrimary = PageNameWhite,// Bu en üste ekran ismini içeren yerin rengi
+    onBackground = GolaScreenTopBarTextColorWhite,
+    surfaceTint = GolasRowColorWhite //Bu Golas ekranındaki Rowların rengi
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),

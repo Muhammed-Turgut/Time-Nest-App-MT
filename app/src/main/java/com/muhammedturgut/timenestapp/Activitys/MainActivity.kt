@@ -26,9 +26,9 @@ import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ToDo.Screens.ToDoScreen
 import com.muhammedturgut.timenestapp.ToDo.Screens.ViewModel.GolasMissionViewModel
-import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
+import com.muhammedturgut.timenestapp.ui.theme.PrimaryColorWhite
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
-import com.muhammedturgut.timenestapp.ui.theme.selectedIconColor
+
 
 
 class MainActivity : ComponentActivity() {
@@ -125,29 +125,36 @@ fun NavigationBottomBar(navController: NavHostController) {
     val systemUiController = rememberSystemUiController()
 
     LaunchedEffect(Unit) {
-        systemUiController.setNavigationBarColor(PrimaryColor) // veya Color.Transparent
+        systemUiController.setNavigationBarColor(PrimaryColorWhite) // veya Color.Transparent
     }
 
     val items = listOf(
         BottomNavigationItem(
-            title = "Yapılacaklar",
-            selectedIcon = R.xml.yapilacaklarselected,
-            unSelectedIcon = R.xml.yapilacaklardefualt,
+            title = "Görevler",
+            selectedIcon = R.drawable.selectedwihtlist,
+            unSelectedIcon = R.drawable.defaultlist,
             route = "todo",
             hasNews = false
         ),
         BottomNavigationItem(
             title = "Takvim",
-            selectedIcon = R.xml.takvimselected,
-            unSelectedIcon = R.xml.takvimdefualt,
+            selectedIcon = R.drawable.selectedwhitecalendar,
+            unSelectedIcon = R.drawable.defaultcalendar,
             route = "calendar",
             hasNews = false,
 
         ),
         BottomNavigationItem(
-            title = "Zamanlayıcı",
-            selectedIcon = R.xml.timeselected,
-            unSelectedIcon = R.xml.timedefualt,
+            title = "zamanlayıcı",
+            selectedIcon = R.drawable.selectedwihtetimer,
+            unSelectedIcon = R.drawable.defaulttimer,
+            route = "timer",
+            hasNews = false
+        ),
+        BottomNavigationItem(
+            title = "istatistik",
+            selectedIcon = R.drawable.selectedwhitestatistics,
+            unSelectedIcon = R.drawable.defaultstatistics,
             route = "timer",
             hasNews = false
         )
@@ -155,7 +162,7 @@ fun NavigationBottomBar(navController: NavHostController) {
 
     var selectedItemIndex by remember { mutableStateOf(0) }
     NavigationBar(
-             containerColor = PrimaryColor,
+             containerColor = MaterialTheme.colorScheme.primary,
              modifier = Modifier
             .background(Color.White),
     ) {
@@ -173,7 +180,7 @@ fun NavigationBottomBar(navController: NavHostController) {
                     }
                 },
                 label = {
-                    Text(text = item.title, fontSize = 12.sp, color = Color.White)
+                    Text(text = item.title, fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiaryContainer)
                 },
                 alwaysShowLabel = false,
                 icon = {
@@ -189,13 +196,13 @@ fun NavigationBottomBar(navController: NavHostController) {
                         Image(
                             painter = painterResource(id = if (selectedItemIndex == index) item.selectedIcon else item.unSelectedIcon),
                             contentDescription = item.title,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = selectedIconColor,
-                    selectedTextColor = selectedIconColor
+                    indicatorColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.tertiaryContainer
                 )
             )
         }

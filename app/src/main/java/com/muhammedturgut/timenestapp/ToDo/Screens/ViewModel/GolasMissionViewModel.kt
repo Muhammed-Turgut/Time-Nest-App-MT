@@ -24,7 +24,7 @@ class GolasMissionViewModel(application: Application): AndroidViewModel(applicat
     private val itemGoalDao = db.itemGoalDao()
     private val _itemList = MutableStateFlow<List<Item>>(emptyList())
     val itemList: StateFlow<List<Item>> = _itemList
-    val selectedItem = mutableStateOf<Item>(Item("","","",1))
+    val selectedItem = mutableStateOf<Item>(Item("","","","",1))
 
     private val _itemListAim = MutableStateFlow<List<Item>>(emptyList())
     val itemListAim: StateFlow<List<Item>> = _itemListAim
