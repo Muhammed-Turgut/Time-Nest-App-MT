@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -93,7 +94,7 @@ fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit, UpdateFuncition:
             FAB { showDialog = true }
         }
 
-        if (showDialog) {
+        AnimatedVisibility(visible = showDialog, modifier = Modifier.fillMaxWidth()) {
             CustomDialog(
                 onDismiss = { showDialog = false },
                 saveFunction = { newItem ->
@@ -102,6 +103,7 @@ fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit, UpdateFuncition:
                 }
             )
         }
+
     }
 }
 

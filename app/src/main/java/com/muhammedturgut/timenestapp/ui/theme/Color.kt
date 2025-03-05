@@ -37,6 +37,12 @@ val RowDarkBlue =Color(0xFF4B88C9)
 val RowOrange =Color(0xFFFFA100)
 val RowRed =Color(0xFFFD1010)
 
+val TimerCricelColor =Color(0xFF31AEB0)
+
+val TimerRowColor =Color(0xFFF1F0F0)
+
+
+
 
 
 

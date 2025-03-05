@@ -69,6 +69,7 @@ fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (It
 
             val days = generateDaysList()
             val today = Calendar.getInstance() // Mevcut tarihi alın
+            val todayFormatted = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(today.time) // Bugünün tarihini formatla
 
             // LazyListState ve CoroutineScope'u hatırla
             val listState = rememberLazyListState()
@@ -80,6 +81,8 @@ fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (It
                 modifier = Modifier.width(60.dp)
             ) {
                 items(days) { day ->
+
+
                     CalenderRow(day = day, isToday = isSameDay(day, today)) // isToday parametresi geçiliyor
                 }
             }
@@ -97,11 +100,13 @@ fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (It
             // Veri tabanı verilerin geleceği yer
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(item) { currentItem ->
-                    AimROW(item=currentItem, UpdateFuncition,deleteItem)
+                    if(currentItem.startTime == todayFormatted){ // Tarih karşılaştırması
+                        AimROW(item=currentItem, UpdateFuncition,deleteItem)
+                    }
                 }
             }
         }
@@ -117,7 +122,12 @@ fun CalenderRow(day: CalendarDay, isToday: Boolean){
     Surface(
         modifier = Modifier
             .size(100.dp)
-            .padding(top = 8.dp), // Dairenin boyutu
+            .padding(top = 8.dp, start = 8.dp)
+            .clickable {
+
+
+
+            }, // Dairenin boyutu
         color = backgroundColor, // Renk duruma göre ayarlanıyor
         shape = CircleShape // Dairesel şekil
     ) {

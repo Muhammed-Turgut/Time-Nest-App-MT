@@ -117,7 +117,7 @@ fun CalendarScreen() {
 
 @Composable
 fun TimerScreen() {
-    com.muhammedturgut.timenestapp.TimerScreen()
+    com.muhammedturgut.timenestapp.TimerScreen.TimerScreen()
 }
 
 @Composable

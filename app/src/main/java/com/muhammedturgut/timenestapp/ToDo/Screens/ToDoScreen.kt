@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -39,12 +38,6 @@ import androidx.navigation.compose.composable
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ui.theme.GolaScreenTopBarSelected
-import com.muhammedturgut.timenestapp.ui.theme.ligthGray
-import com.muhammedturgut.timenestapp.ui.theme.ligthGray2
-import com.muhammedturgut.timenestapp.ui.theme.navTopSelectedColor
-import com.muhammedturgut.timenestapp.ui.theme.transparan
-
-
 
 
 @Composable
@@ -100,7 +93,6 @@ fun ToDoScreen(
                     composable("tamamlandi") { Aim(itemAim, UpdateFuncition, deleteItem) }
                 }
 
-
         }
     }
 }
@@ -141,7 +133,7 @@ fun NavigationTopBar(
                 modifier = Modifier
                     .background(
                         color = if (selectedTab == item.route) GolaScreenTopBarSelected else MaterialTheme.colorScheme.onTertiaryContainer,
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
                     .clickable {
                         navController.navigate(item.route)
