@@ -1,8 +1,6 @@
 package com.muhammedturgut.timenestapp.ToDo.Screens.ViewModel
 
 import android.app.Application
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +37,7 @@ class GolasMissionViewModel(application: Application): AndroidViewModel(applicat
             try {
                 val items = itemGoalDao.getItemWithNameAndId()
                 _itemList.value = items
-                println("Veri sayısı: ${items.size}")
+
             } catch (e: Exception) {
                 println("Hata: ${e.message}")
             }

@@ -24,6 +24,8 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.BottomNavigationItem
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
+import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
+import com.muhammedturgut.timenestapp.TimerScreen.ViewModel.TimerViewModel
 import com.muhammedturgut.timenestapp.ToDo.Screens.ToDoScreen
 import com.muhammedturgut.timenestapp.ToDo.Screens.ViewModel.GolasMissionViewModel
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColorWhite
@@ -32,7 +34,8 @@ import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: GolasMissionViewModel by viewModels()
+    private val viewModelToDo: GolasMissionViewModel by viewModels()
+    private val viewModelTimer: TimerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,38 +60,46 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("todo") {
                             LaunchedEffect(Unit) {
-                                viewModel.getItemList()
+                                viewModelToDo.getItemList()
                             }
-                            val itemList by viewModel.itemList.collectAsState(initial = emptyList())
+                            val itemList by viewModelToDo.itemList.collectAsState(initial = emptyList())
 
                             LaunchedEffect(Unit) {
-                                viewModel.getItemListAim()
+                                viewModelToDo.getItemListAim()
                             }
-                            val itemListAim by viewModel.itemListAim.collectAsState(initial = emptyList())
+                            val itemListAim by viewModelToDo.itemListAim.collectAsState(initial = emptyList())
 
                             TodoScreen(
                                 itemList,
                                 itemListAim,
-                                saveFunction = { item -> 
-                                    viewModel.saveItem(item)
+                                saveFunction = { item ->
+                                    viewModelToDo.saveItem(item)
                                 },
-                                UpdateFuncition = { item -> 
-                                    viewModel.updateItem(item)
+                                UpdateFuncition = { item ->
+                                    viewModelToDo.updateItem(item)
                                 },
-                                deleteItem = { item ->  
-                                    viewModel.deleteItem(item)
+                                deleteItem = { item ->
+                                    viewModelToDo.deleteItem(item)
                                 },
                                 onTabSelected = { route -> 
                                     if (route == "tamamlandi") {
-                                        viewModel.getItemListAim()
+                                        viewModelToDo.getItemListAim()
                                     } else {
-                                        viewModel.getItemList()
+                                        viewModelToDo.getItemList()
                                     }
                                 }
                             )
                         }
                         composable("calendar") { CalendarScreen() }
-                        composable("timer") { TimerScreen() }
+                        composable("timer") {
+                            LaunchedEffect(Unit) {
+                                viewModelTimer.getItemList()
+                            }
+                            val itemList by viewModelTimer.itemTimerList.collectAsState(initial = emptyList())
+
+                            TimerScreen(itemList,
+                                saveFunction = {item -> viewModelTimer.saveItem(item)},
+                                deleteFunction = {item -> viewModelTimer.deleteItem(item)})}
                     }
                 }
             }
@@ -116,8 +127,8 @@ fun CalendarScreen() {
 }
 
 @Composable
-fun TimerScreen() {
-    com.muhammedturgut.timenestapp.TimerScreen.TimerScreen()
+fun TimerScreen(item: List<TimerItem>, saveFunction: (TimerItem) -> Unit,deleteFunction: (TimerItem) -> Unit) {
+    com.muhammedturgut.timenestapp.TimerScreen.TimerScreen(item,saveFunction,deleteFunction)
 }
 
 @Composable

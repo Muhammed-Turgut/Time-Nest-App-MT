@@ -1,29 +1,23 @@
 package com.muhammedturgut.timenestapp.TimerScreen
 
 import android.os.CountDownTimer
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,20 +26,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
-import com.muhammedturgut.timenestapp.ui.theme.TimerCricelColor
+import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimerRowColor
 
 
+
 @Composable
-fun TimerScreen() {
+fun TimerScreen(
+    item: List<TimerItem>,
+    saveFunction: (TimerItem) -> Unit,
+    deleteFunction: (TimerItem) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var isRunning by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -64,105 +67,183 @@ fun TimerScreen() {
                 fontSize = 32.sp,
                 color = MaterialTheme.colorScheme.tertiaryContainer,
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 16.dp, bottom = 8.dp), textAlign = TextAlign.Start
+                    .padding(start = 20.dp, top = 16.dp, bottom = 8.dp),
+                textAlign = TextAlign.Start
             )
 
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
-                TimerCircle(totalTime = 10_000)
-            }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+            ) {
 
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 26.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center)
-            {
-                Image(painter = painterResource(R.drawable.trashbutton), contentDescription = null, modifier = Modifier.size(38.dp))
-                Image(painter = painterResource(R.drawable.timerstatebutton), contentDescription = null, modifier = Modifier.padding(start = 8.dp).size(48.dp))
-                Image(painter = painterResource(R.drawable.timeraddbutton), contentDescription = null, modifier = Modifier.padding(start = 8.dp).size(38.dp))
-            }
-
-            Box(modifier = Modifier.fillMaxSize().padding(top = 38.dp)){
-
-                LazyColumn {
-                    items(listTimer){ timer ->
-                        TimerRow(timer)
-                    }
+                if (item.isEmpty()) {
+                    TimerCircle(TimerItem("Fizik", 0, 0, 20, 0), isRunning = isRunning)
+                } else {
+                    TimerCircle(item[0], isRunning = isRunning)
                 }
             }
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 26.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.reboottimerbutton),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            // Timer'ı baştan al
+                        }
+                )
 
+                var timerState by remember { mutableStateOf(true) }
+                Image(
+                    painter = painterResource(if(timerState) R.drawable.timerstatebutton else R.drawable.timerstatetwobutton),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            timerState = !timerState
+                            //Timer durdurma yeri
+                            isRunning = !isRunning
+
+                        }
+                )
+
+                Image(
+                    painter = painterResource(R.drawable.timeraddbutton),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            showDialog = true
+                        }
+                )
+
+                if (showDialog) {
+                    TimerAddDialog(onDismiss = { showDialog = false }, saveFunction)
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 38.dp)
+            ) {
+                LazyColumn {
+                    items(item) { timer ->
+                        TimerRow(timer, deleteFunction)
+                    }
+                }
+            }
         }
     }
 }
 
+
 @Composable
-fun TimerRow(timer:TimerItem){
-    Row (modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 8.dp)
-        .padding(top = 16.dp)
-        .clip(RoundedCornerShape(30.dp))
-        .background(TimerRowColor),
+fun TimerRow(timer: TimerItem,deleteFunction:(TimerItem) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .padding(top = 16.dp)
+            .clip(RoundedCornerShape(30.dp))
+            .background(TimerRowColor),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
-    ){
-
-        Text(text=timer.timerOrder ?: "",
+    ) {
+        Text(
+            text = "${timer.timerOrder}",
             modifier = Modifier
                 .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
-            fontSize = 18.sp, textAlign = TextAlign.Center) //Sıraya alınan timer numarası
+            fontSize = 18.sp, textAlign = TextAlign.Center
+        )
 
-        Text(text=timer.timerName ?: "",
+        Text(
+            text = timer.timerName ?: "",
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 8.dp,top = 8.dp, bottom = 8.dp),
+                .padding(start = 8.dp, top = 8.dp, bottom = 8.dp),
             fontSize = 18.sp,
-            textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center
+        )
 
-        Text(text=timer.timerAmount ?: "",
+        Text(
+            text = "${String.format("%02d", timer.timer_hour)} : ${String.format("%02d", timer.timer_minute)} : ${String.format("%02d", timer.timer_second)}",
             modifier = Modifier
                 .weight(1f)
                 .padding(top = 8.dp, bottom = 8.dp),
             fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,textAlign = TextAlign.Center)
+            fontSize = 18.sp, textAlign = TextAlign.Center
+        )
 
-        Image(painter = painterResource(R.drawable.rowdelete),
+        Image(
+            painter = painterResource(R.drawable.rowdelete),
             contentDescription = null,
             modifier = Modifier
-                .padding(end = 16.dp,top = 8.dp, bottom = 8.dp)
+                .padding(end = 16.dp, top = 8.dp, bottom = 8.dp)
+                .clickable {
+                    deleteFunction(timer)
+                }
         )
     }
 }
 
 
 @Composable
-fun TimerCircle(
-    totalTime: Int = 10_000,  // Toplam süre (10 saniye)
-    modifier: Modifier = Modifier.size(200.dp)
-) {
-    var remainingTime by remember { mutableStateOf(totalTime) }
-    val progress by remember { derivedStateOf { remainingTime.toFloat() / totalTime } }
+fun TimerCircle(totalTime: TimerItem, isRunning: Boolean, modifier: Modifier = Modifier.size(200.dp)) {
 
-    LaunchedEffect(Unit) {
-        val timer = object : CountDownTimer(totalTime.toLong(), 100) {
-            override fun onTick(millisUntilFinished: Long) {
-                remainingTime = millisUntilFinished.toInt()
-            }
+    var remainingHour by remember { mutableStateOf(totalTime.timer_hour) }
+    var remainingMinute by remember { mutableStateOf(totalTime.timer_minute) }
+    var remainingSecond by remember { mutableStateOf(totalTime.timer_second) }
+    var remainingTime by remember { mutableStateOf(totalTime.toLong()) }
+    val totalMillis = totalTime.toLong()
 
-            override fun onFinish() {
-                remainingTime = 0
+    var timer: CountDownTimer? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(isRunning) {
+        if (isRunning) {
+            timer?.cancel() // Var olan zamanlayıcıyı iptal et
+            timer = object : CountDownTimer(remainingTime, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    remainingTime = millisUntilFinished
+                    remainingHour = (millisUntilFinished / 3600000).toInt()
+                    remainingMinute = ((millisUntilFinished % 3600000) / 60000).toInt()
+                    remainingSecond = ((millisUntilFinished % 60000) / 1000).toInt()
+                }
+
+                override fun onFinish() {
+                    remainingTime = 0
+                    remainingHour = 0
+                    remainingMinute = 0
+                    remainingSecond = 0
+                }
             }
+            timer?.start()
+        } else {
+            timer?.cancel() // Zamanlayıcı çalışmıyorsa iptal et
         }
-        timer.start()
     }
+
+    val progress = (remainingTime / totalMillis.toFloat())
 
     Box(modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidth = 28f
             val radius = size.minDimension / 2 - strokeWidth
 
-            // Arka plan çemberi
             drawCircle(
                 color = Color.Gray.copy(alpha = 0.3f),
                 radius = radius,
@@ -170,9 +251,8 @@ fun TimerCircle(
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
             )
 
-            // Kalan süreye göre çember
             drawArc(
-                color = TimerCricelColor,
+                color = PrimaryColor,
                 startAngle = -90f,
                 sweepAngle = 360 * progress,
                 useCenter = false,
@@ -182,10 +262,9 @@ fun TimerCircle(
             )
         }
 
-        // Ortada kalan süre
         Text(
-            text = "${(remainingTime / 1000)}",
-            fontSize = 36.sp,
+            text = "${remainingHour.toString().padStart(2, '0')} : ${remainingMinute.toString().padStart(2, '0')} : ${remainingSecond.toString().padStart(2, '0')}",
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Center)
         )
@@ -193,18 +272,202 @@ fun TimerCircle(
 }
 
 
-val listTimer= listOf<TimerItem>(
-    TimerItem("Kimya","05:00","1"),
-    TimerItem("Matemetik","20:00","2"),
-    TimerItem("Fizik","30:00","3"),
-    TimerItem("Biyoloji","10:00","4"),
-    TimerItem("Edebiyat","12:00","5"),
-    TimerItem("Tarih","03:00","6"),
-    TimerItem("Fizik","30:00","3"),
-    TimerItem("Biyoloji","10:00","4"),
-    TimerItem("Edebiyat","12:00","5"),
-    TimerItem("Tarih","03:00","6"),
-    TimerItem("Fizik","30:00","3"),
-    TimerItem("Biyoloji","10:00","4"),
-    TimerItem("Edebiyat","12:00","5"),
-    TimerItem("Tarih","03:00","6"))
+
+@Composable
+fun TimerAddDialog(onDismiss: () -> Unit, saveFunction:(TimerItem) -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp),
+            shape = RoundedCornerShape(4.dp),
+            color = Color.White
+        ) {
+            var order by remember { mutableStateOf(0) }
+            var name by remember { mutableStateOf("") }
+
+            Column(
+                modifier = Modifier.padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(PrimaryColor),
+                    Alignment.Center
+                ){
+                    Text(text="Süre Tut",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp, textAlign = TextAlign.Center,
+                        color = Color.White)
+                }
+
+                val listTimer = RotaryKnobb()
+
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Görev Adı", fontSize = 12.sp) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    textStyle = TextStyle(textAlign = TextAlign.Center) // Metni ortalamak için textAlign kullanılıyor
+                )
+
+                Button( shape = RoundedCornerShape(8.dp),
+                    onClick = {
+                        saveFunction(
+                            TimerItem(name,listTimer[0],listTimer[1],listTimer[2],order))
+                            onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                ) {
+                    Text("Ekle")
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun RotaryKnobb(): List<Int> {
+
+
+    var saat by remember { mutableStateOf(0) }
+    var dakika by remember { mutableStateOf(0) }
+    var saniye by remember { mutableStateOf(0) }
+
+    Row(
+        modifier = Modifier
+            .size(300.dp, 140.dp)
+            .padding(horizontal = 34.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Column(
+            modifier = Modifier.size(48.dp, 140.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.increasebutton),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(46.dp)
+                    .clickable {
+                        saat++
+                        saat = (saat + 24) % 24
+                    }
+            )
+            Text(
+                text = String.format("%02d", saat),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = Color.Black,
+                fontSize = 28.sp
+            )
+            Image(
+                painter = painterResource(id = R.drawable.reducebutton),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(46.dp)
+                    .clickable {
+                        saat--
+                        saat = (saat + 24) % 24
+                    }
+            )
+        }
+
+        Text(
+            text = ":",
+            fontSize = 18.sp,
+            color = Color.Black,
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+            textAlign = TextAlign.Center,
+        )
+
+        Column(
+            modifier = Modifier.size(48.dp, 140.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.increasebutton),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clickable {
+                        dakika++
+                        dakika = (dakika + 60) % 60
+                    }
+            )
+            Text(
+                text = String.format("%02d", dakika),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = Color.Black,
+                fontSize = 24.sp
+            )
+            Image(
+                painter = painterResource(id = R.drawable.reducebutton),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clickable {
+                        dakika--
+                        dakika = (dakika + 60) % 60
+                    }
+            )
+        }
+
+        Text(
+            text = ":",
+            fontSize = 18.sp,
+            color = Color.Black,
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+            textAlign = TextAlign.Center,
+        )
+
+        Column(
+            modifier = Modifier.size(30.dp, 100.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.increasebutton),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(38.dp)
+                    .clickable {
+                        saniye++
+                        saniye = (saniye + 60) % 60
+                    }
+            )
+            Text(
+                text = String.format("%02d", saniye),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = Color.Black,
+                fontSize = 20.sp
+            )
+            Image(
+                painter = painterResource(id = R.drawable.reducebutton),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(38.dp)
+                    .clickable {
+                        saniye--
+                        saniye = (saniye + 60) % 60
+                    }
+            )
+        }
+    }
+
+    return  listOf(saat, dakika, saniye)
+}
