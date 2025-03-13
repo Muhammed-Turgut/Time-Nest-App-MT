@@ -76,6 +76,7 @@ dependencies {
     val room_Version = "2.6.1"
 
     //Room Data Base için kullanılan kütüphaneler.
+    annotationProcessor("androidx.room:room-compiler:$room_Version")
     implementation("androidx.room:room-runtime:$room_Version")
     annotationProcessor("androidx.room:room-compiler:$room_Version")
     ksp("androidx.room:room-compiler:$room_Version")

@@ -62,9 +62,6 @@ import kotlin.random.Random
 fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(item) {
-        println("GoalsScreen'e gelen veri sayısı: ${item.size}")
-    }
 
     Box(
         modifier = Modifier

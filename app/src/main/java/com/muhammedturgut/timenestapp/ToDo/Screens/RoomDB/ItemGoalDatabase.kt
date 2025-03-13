@@ -9,12 +9,4 @@ import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 @Database(entities = [Item::class], version = 1)
 abstract class ItemGoalDatabase : RoomDatabase() {
     abstract fun itemGoalDao(): ItemGoalDao
-
-    companion object {
-        public val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Migration işlemleri buraya yazılır
-            }
-        }
-    }
 }

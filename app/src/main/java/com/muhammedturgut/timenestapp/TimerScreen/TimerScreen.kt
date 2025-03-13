@@ -1,7 +1,6 @@
 package com.muhammedturgut.timenestapp.TimerScreen
 
 import android.os.CountDownTimer
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,12 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,21 +32,38 @@ import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimerRowColor
-
-
+import kotlinx.coroutines.delay
 
 @Composable
 fun TimerScreen(
     item: List<TimerItem>,
     saveFunction: (TimerItem) -> Unit,
+    updateFunction: (TimerItem) -> Unit,
     deleteFunction: (TimerItem) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var isRunning by remember { mutableStateOf(false) }
+    var timerState by remember { mutableStateOf(true) }
+    var timerStateOption by remember { mutableStateOf(false) }
+    var backgroundTimer by remember { mutableStateOf(Color(0xFFFFFFFF)) }
+
+    if (timerStateOption){
+        LaunchedEffect(Unit) {
+            while (true) {
+                backgroundTimer = if (backgroundTimer == Color(0xFFFFFFFF)) {
+                    Color(0xFFFF0000)
+                } else {
+                    Color(0xFFFFFFFF)
+                }
+                delay(1500)
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(backgroundTimer)
     ) {
         Column(
             modifier = Modifier
@@ -78,10 +89,33 @@ fun TimerScreen(
                     .padding(top = 24.dp)
             ) {
 
+                var index by remember { mutableStateOf(0) }
+
                 if (item.isEmpty()) {
-                    TimerCircle(TimerItem("Fizik", 0, 0, 20, 0), isRunning = isRunning)
+                    TimerCircle(TimerItem("", 0, 0, 0, 0), isRunning = isRunning, onTimerFinish = {
+                        isRunning = false
+                    })
                 } else {
-                    TimerCircle(item[0], isRunning = isRunning)
+                    TimerCircle(item[index], isRunning = isRunning, onTimerFinish = {
+                        timerStateOption = true
+                        timerState = !timerState
+                        if (timerState) {
+                            timerStateOption = false
+                        }
+                        if (item.isNotEmpty()) {
+                            deleteFunction(item[index]) // Mevcut öğeyi sil
+                            updateFunction(item[index])
+                            val updatedItem = item.sortedBy { it.timerOrder } // Güncellenmiş liste
+                            if (updatedItem.isNotEmpty()) {
+                                index = (index + 1) % updatedItem.size
+                                isRunning = true
+                            } else {
+                                isRunning = false
+                            }
+                        } else {
+                            isRunning = false // Liste boşsa durdur
+                        }
+                    })
                 }
             }
 
@@ -99,11 +133,10 @@ fun TimerScreen(
                         .size(38.dp)
                         .clip(CircleShape)
                         .clickable {
-                            // Timer'ı baştan al
+                            isRunning = false
                         }
                 )
 
-                var timerState by remember { mutableStateOf(true) }
                 Image(
                     painter = painterResource(if(timerState) R.drawable.timerstatebutton else R.drawable.timerstatetwobutton),
                     contentDescription = null,
@@ -113,9 +146,7 @@ fun TimerScreen(
                         .clip(CircleShape)
                         .clickable {
                             timerState = !timerState
-                            //Timer durdurma yeri
                             isRunning = !isRunning
-
                         }
                 )
 
@@ -151,9 +182,8 @@ fun TimerScreen(
     }
 }
 
-
 @Composable
-fun TimerRow(timer: TimerItem,deleteFunction:(TimerItem) -> Unit) {
+fun TimerRow(timer: TimerItem, deleteFunction: (TimerItem) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,10 +231,13 @@ fun TimerRow(timer: TimerItem,deleteFunction:(TimerItem) -> Unit) {
     }
 }
 
-
 @Composable
-fun TimerCircle(totalTime: TimerItem, isRunning: Boolean, modifier: Modifier = Modifier.size(200.dp)) {
-
+fun TimerCircle(
+    totalTime: TimerItem,
+    isRunning: Boolean,
+    onTimerFinish: () -> Unit = {},
+    modifier: Modifier = Modifier.size(200.dp)
+) {
     var remainingHour by remember { mutableStateOf(totalTime.timer_hour) }
     var remainingMinute by remember { mutableStateOf(totalTime.timer_minute) }
     var remainingSecond by remember { mutableStateOf(totalTime.timer_second) }
@@ -229,6 +262,7 @@ fun TimerCircle(totalTime: TimerItem, isRunning: Boolean, modifier: Modifier = M
                     remainingHour = 0
                     remainingMinute = 0
                     remainingSecond = 0
+                    onTimerFinish()
                 }
             }
             timer?.start()
@@ -271,10 +305,8 @@ fun TimerCircle(totalTime: TimerItem, isRunning: Boolean, modifier: Modifier = M
     }
 }
 
-
-
 @Composable
-fun TimerAddDialog(onDismiss: () -> Unit, saveFunction:(TimerItem) -> Unit) {
+fun TimerAddDialog(onDismiss: () -> Unit, saveFunction: (TimerItem) -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier
@@ -307,7 +339,6 @@ fun TimerAddDialog(onDismiss: () -> Unit, saveFunction:(TimerItem) -> Unit) {
 
                 val listTimer = RotaryKnobb()
 
-
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -318,11 +349,13 @@ fun TimerAddDialog(onDismiss: () -> Unit, saveFunction:(TimerItem) -> Unit) {
                     textStyle = TextStyle(textAlign = TextAlign.Center) // Metni ortalamak için textAlign kullanılıyor
                 )
 
-                Button( shape = RoundedCornerShape(8.dp),
+                Button(
+                    shape = RoundedCornerShape(8.dp),
                     onClick = {
                         saveFunction(
-                            TimerItem(name,listTimer[0],listTimer[1],listTimer[2],order))
-                            onDismiss()
+                            TimerItem(name, listTimer[0], listTimer[1], listTimer[2], order)
+                        )
+                        onDismiss()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                 ) {
@@ -333,11 +366,8 @@ fun TimerAddDialog(onDismiss: () -> Unit, saveFunction:(TimerItem) -> Unit) {
     }
 }
 
-
-
 @Composable
 fun RotaryKnobb(): List<Int> {
-
 
     var saat by remember { mutableStateOf(0) }
     var dakika by remember { mutableStateOf(0) }
@@ -469,5 +499,5 @@ fun RotaryKnobb(): List<Int> {
         }
     }
 
-    return  listOf(saat, dakika, saniye)
+    return listOf(saat, dakika, saniye)
 }

@@ -99,7 +99,8 @@ class MainActivity : ComponentActivity() {
 
                             TimerScreen(itemList,
                                 saveFunction = {item -> viewModelTimer.saveItem(item)},
-                                deleteFunction = {item -> viewModelTimer.deleteItem(item)})}
+                                deleteFunction = {item -> viewModelTimer.deleteItem(item)},
+                                updateFunction = {item-> viewModelTimer.deleteItem(item)})}
                     }
                 }
             }
@@ -127,8 +128,8 @@ fun CalendarScreen() {
 }
 
 @Composable
-fun TimerScreen(item: List<TimerItem>, saveFunction: (TimerItem) -> Unit,deleteFunction: (TimerItem) -> Unit) {
-    com.muhammedturgut.timenestapp.TimerScreen.TimerScreen(item,saveFunction,deleteFunction)
+fun TimerScreen(item: List<TimerItem>, saveFunction: (TimerItem) -> Unit,deleteFunction: (TimerItem) -> Unit,updateFunction: (TimerItem) -> Unit) {
+    com.muhammedturgut.timenestapp.TimerScreen.TimerScreen(item,saveFunction,deleteFunction,updateFunction)
 }
 
 @Composable
