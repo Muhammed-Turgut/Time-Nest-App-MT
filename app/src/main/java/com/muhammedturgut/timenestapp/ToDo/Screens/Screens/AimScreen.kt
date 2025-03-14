@@ -1,18 +1,15 @@
-package com.muhammedturgut.timenestapp.ToDo.Screens
+package com.muhammedturgut.timenestapp.ToDo.Screens.Screens
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
-import com.muhammedturgut.timenestapp.ui.theme.GolasRowColorText
 import com.muhammedturgut.timenestapp.ui.theme.RowOrange
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 import java.text.SimpleDateFormat

@@ -28,3 +28,4 @@ interface ItemGoalDao {
     @Update
     suspend fun update(item: Item)
 }
+

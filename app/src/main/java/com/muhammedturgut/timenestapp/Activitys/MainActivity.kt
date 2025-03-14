@@ -21,12 +21,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
+import com.muhammedturgut.timenestapp.ChainBreakingScreen.ViewModel.ChainViewModel
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.BottomNavigationItem
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
 import com.muhammedturgut.timenestapp.TimerScreen.ViewModel.TimerViewModel
-import com.muhammedturgut.timenestapp.ToDo.Screens.ToDoScreen
+import com.muhammedturgut.timenestapp.ToDo.Screens.Screens.ToDoScreen
 import com.muhammedturgut.timenestapp.ToDo.Screens.ViewModel.GolasMissionViewModel
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColorWhite
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
@@ -36,6 +38,7 @@ import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
 class MainActivity : ComponentActivity() {
     private val viewModelToDo: GolasMissionViewModel by viewModels()
     private val viewModelTimer: TimerViewModel by viewModels()
+    private val viewModelChain: ChainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +93,17 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("calendar") { CalendarScreen() }
+                        composable("calendar") {
+                            LaunchedEffect(Unit) {
+                                viewModelChain.getItemList()
+                            }
+                            val itemList by viewModelChain.itemListChain.collectAsState(initial = emptyList())
+
+                            ChainBreakingScreen(itemList,
+                                saveFunction = { item-> viewModelChain.saveItem(item) })
+                        }
+
+
                         composable("timer") {
                             LaunchedEffect(Unit) {
                                 viewModelTimer.getItemList()
@@ -123,8 +136,8 @@ fun TodoScreen(item: List<Item>, itemAim: List<Item>, saveFunction: (Item) -> Un
 }
 
 @Composable
-fun CalendarScreen() {
-    com.muhammedturgut.timenestapp.CalendarScreen()
+fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Unit) {
+    com.muhammedturgut.timenestapp.ChainBreakingScreen.ChainBreakingScreen(items,saveFunction)
 }
 
 @Composable
@@ -149,9 +162,9 @@ fun NavigationBottomBar(navController: NavHostController) {
             hasNews = false
         ),
         BottomNavigationItem(
-            title = "Takvim",
-            selectedIcon = R.drawable.selectedwhitecalendar,
-            unSelectedIcon = R.drawable.defaultcalendar,
+            title = "Alışkanlıklar",
+            selectedIcon = R.drawable.aliskanliklarselected,
+            unSelectedIcon = R.drawable.aliskanliklardefault,
             route = "calendar",
             hasNews = false,
 

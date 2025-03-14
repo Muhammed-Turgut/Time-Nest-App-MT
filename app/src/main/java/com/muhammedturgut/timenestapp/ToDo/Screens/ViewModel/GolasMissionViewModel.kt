@@ -60,7 +60,7 @@ class GolasMissionViewModel(application: Application): AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
             val item = itemGoalDao.getItemById(id)
             item?.let {
-                selectedItem.value = it
+                selectedItem.value = item
             }
         }
     }

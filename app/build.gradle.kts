@@ -51,7 +51,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -69,22 +68,22 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation("androidx.navigation:navigation-compose:2.8.7-alpha10")
+
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha")
+
+    val roomVersion = "2.6.1"
+
+    // Room Data Base için kullanılan kütüphaneler.
+    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("com.google.code.gson:gson:2.12.1")
+
+
+
     implementation ("androidx.navigation:navigation-compose:2.8.7-alpha10")
 
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha")
-
-    val room_Version = "2.6.1"
-
-    //Room Data Base için kullanılan kütüphaneler.
-    annotationProcessor("androidx.room:room-compiler:$room_Version")
-    implementation("androidx.room:room-runtime:$room_Version")
-    annotationProcessor("androidx.room:room-compiler:$room_Version")
-    ksp("androidx.room:room-compiler:$room_Version")
-
-    implementation("androidx.room:room-ktx:$room_Version")
-
-    //MVVM mimarisi için
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    
 }

@@ -1,6 +1,5 @@
-package com.muhammedturgut.timenestapp.ToDo.Screens
+package com.muhammedturgut.timenestapp.ToDo.Screens.Screens
 
-import GoalsScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
