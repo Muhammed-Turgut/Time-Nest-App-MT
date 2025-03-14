@@ -1,7 +1,11 @@
 package com.muhammedturgut.timenestapp.TimerScreen
 
-import android.os.CountDownTimer
-import android.text.BoringLayout
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,47 +28,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
+import com.muhammedturgut.timenestapp.TimerScreen.ViewModel.TimerViewModelTwo
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimerRowColor
-import kotlinx.coroutines.delay
+
 
 @Composable
 fun TimerScreen(
     item: List<TimerItem>,
     saveFunction: (TimerItem) -> Unit,
     updateFunction: (TimerItem) -> Unit,
-    deleteFunction: (TimerItem) -> Unit
+    deleteFunction: (TimerItem) -> Unit,
+    timerViewModel: TimerViewModelTwo = viewModel()
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    var isRunning by remember { mutableStateOf(false) }
-    var timerState by remember { mutableStateOf(false) }
-    var timerStateOption by remember { mutableStateOf(false) }
     var backgroundTimer by remember { mutableStateOf(Color(0xFFFFFFFF)) }
-
-    if (timerStateOption){
-        LaunchedEffect(Unit) {
-            var indeks=0
-            while (timerStateOption) {
-                backgroundTimer = if (backgroundTimer == Color(0xFFFFFFFF)) {
-                    Color(0xFFFF0000)
-                } else {
-                    Color(0xFFFFFFFF)
-                }
-                delay(1500)
-                indeks++
-                if(indeks==10){
-                    timerStateOption=false
-                }
-            }
-        }
-    }
+    var automaticMode by remember { mutableStateOf(true) }
 
     Box(
         modifier = Modifier
@@ -83,33 +71,49 @@ fun TimerScreen(
                 fontFamily = FontFamily(Font(R.font.righteousregular)),
                 fontSize = 32.sp,
                 color = MaterialTheme.colorScheme.tertiaryContainer,
-                modifier = Modifier
-                    .padding(start = 20.dp, top = 16.dp, bottom = 8.dp),
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
                 textAlign = TextAlign.Start
             )
+
+            Box(modifier = Modifier.fillMaxWidth().padding(start = 8.dp)) {
+                Column(modifier = Modifier.padding(2.dp)) {
+                    Text(text = "Otomotik Oynatma", fontSize = 12.sp, fontStyle = FontStyle.Italic, modifier = Modifier.padding(bottom = 4.dp))
+                    CustomSwitch(onTimerSwitch = { automaticMode = !automaticMode })
+                }
+            }
 
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp)
+                    .padding(top = 12.dp)
             ) {
 
-               if(item.isNotEmpty()){
-                  key(item[0]){
-                      TimerCircle(item[0],timerState=timerState, deleteFunction,onTimerFinish = {
-                          deleteFunction(item[0])
-                          timerState=false
-                          timerStateOption=true
-                      })
-                  }
-               }
-                else{
-                   TimerCircle(TimerItem("",0,0,0,0),timerState=false, deleteFunction)
-               }
+                if (item.isNotEmpty()) {
+                    key(item[0]) {
+                        TimerCircle(
+                            totalTime = item[0],
+                            timerState = timerViewModel.timerState,
+                            deleteFunction = deleteFunction,
+                            onTimerFinish = {
+                                deleteFunction(item[0])
+                                timerViewModel.stopTimer()
+                            },
+                            viewModel = timerViewModel,
+                            automaticMode = automaticMode
+                        )
+                    }
+                } else {
+                    TimerCircle(
+                        totalTime = TimerItem("", 0, 0, 0, 0),
+                        timerState = false,
+                        deleteFunction = deleteFunction,
+                        viewModel = timerViewModel,
+                        automaticMode = automaticMode
+                    )
+                }
 
             }
-
 
             Row(
                 modifier = Modifier
@@ -125,13 +129,13 @@ fun TimerScreen(
                         .size(38.dp)
                         .clip(CircleShape)
                         .clickable {
-                            isRunning = false
+                            // Timer reset logic
                         }
                 )
 
                 Image(
                     painter = painterResource(
-                        if(timerState) R.drawable.timerstatetwobutton
+                        if (timerViewModel.timerState) R.drawable.timerstatetwobutton
                         else R.drawable.timerstatebutton
                     ),
                     contentDescription = null,
@@ -140,11 +144,17 @@ fun TimerScreen(
                         .size(48.dp)
                         .clip(CircleShape)
                         .clickable {
-                            timerState = !timerState
-                            isRunning = !isRunning
+                            if (timerViewModel.timerState) {
+                                timerViewModel.stopTimer()
+                            } else {
+                                if (item.isNotEmpty()) {
+                                    timerViewModel.startTimer(item[0], onTimerFinish = {
+                                        deleteFunction(item[0])
+                                    })
+                                }
+                            }
                         }
                 )
-
 
                 Image(
                     painter = painterResource(R.drawable.timeraddbutton),
@@ -166,7 +176,7 @@ fun TimerScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 38.dp)
+                    .padding(top = 24.dp)
             ) {
                 LazyColumn {
                     items(item) { timer ->
@@ -179,12 +189,69 @@ fun TimerScreen(
 }
 
 @Composable
+fun AnimatedCircularWave(isVisible: Boolean) {
+    if (isVisible) {
+        val infiniteTransition = rememberInfiniteTransition()
+
+        val progress by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 4000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+
+        Canvas(modifier = Modifier.size(150.dp)) {
+            val size = size.minDimension
+            val strokeWidth = size * 0.1f
+
+            for (i in 0..10) {
+                val fraction = i / 10f
+                val animatedFraction = (progress + fraction) % 1f
+                val color = Color.Red.copy(alpha = 1f - animatedFraction)
+
+                drawCircle(
+                    color = color,
+                    radius = (size / 1) * animatedFraction,
+                    style = Stroke(width = strokeWidth)
+                )
+            }
+        }
+    }
+}
+
+
+//Switch
+@Composable
+fun CustomSwitch(onTimerSwitch: () -> Unit = {}) {
+    var checked by remember { mutableStateOf(false) }
+
+    Switch(
+        modifier = Modifier.padding(start = 12.dp, top = 0.dp).size(16.dp),
+        checked = checked,
+        onCheckedChange = {
+            checked = it
+            onTimerSwitch()
+                          },
+        colors = SwitchDefaults.colors(
+            checkedTrackColor = Color.Green,      // Açıkken track rengi
+            uncheckedTrackColor = Color.White,      // Kapalıyken track rengi
+            checkedThumbColor = Color.White,      // Açıkken buton rengi
+            uncheckedThumbColor = Color.Black      // Kapalıyken buton rengi
+        )
+    )
+
+
+}
+
+@Composable
 fun TimerRow(timer: TimerItem, deleteFunction: (TimerItem) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .padding(top = 16.dp)
+            .padding(top = 8.dp)
             .clip(RoundedCornerShape(30.dp))
             .background(TimerRowColor),
         verticalAlignment = Alignment.CenterVertically,
@@ -230,48 +297,28 @@ fun TimerRow(timer: TimerItem, deleteFunction: (TimerItem) -> Unit) {
 @Composable
 fun TimerCircle(
     totalTime: TimerItem,
-    timerState:Boolean,
+    timerState: Boolean,
+    automaticMode: Boolean,
     deleteFunction: (TimerItem) -> Unit,
     onTimerFinish: () -> Unit = {},
+    viewModel: TimerViewModelTwo,
     modifier: Modifier = Modifier.size(200.dp)
 ) {
-    var remainingHour by remember { mutableStateOf(totalTime.timer_hour) }
-    var remainingMinute by remember { mutableStateOf(totalTime.timer_minute) }
-    var remainingSecond by remember { mutableStateOf(totalTime.timer_second) }
-    var remainingTime by remember { mutableStateOf(totalTime.toLong()) }
+    val remainingHour = viewModel.remainingHour
+    val remainingMinute = viewModel.remainingMinute
+    val remainingSecond = viewModel.remainingSecond
+    val remainingTime = viewModel.remainingTime
     val totalMillis = totalTime.toLong()
-
-    var timer: CountDownTimer? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(timerState) {
-        if (timerState) {
-            timer?.cancel() // Var olan zamanlayıcıyı iptal et
-            timer = object : CountDownTimer(remainingTime, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    remainingTime = millisUntilFinished
-                    remainingHour = (millisUntilFinished / 3600000).toInt()
-                    remainingMinute = ((millisUntilFinished % 3600000) / 60000).toInt()
-                    remainingSecond = ((millisUntilFinished % 60000) / 1000).toInt()
-                }
-
-                override fun onFinish() {
-                    remainingTime = 0
-                    remainingHour = 0
-                    remainingMinute = 0
-                    remainingSecond = 0
-                    deleteFunction(totalTime)
-                    onTimerFinish()
-                }
-            }
-            timer?.start()
-        } else {
-            timer?.cancel() // Zamanlayıcı çalışmıyorsa iptal et
-        }
-    }
 
     val progress = (remainingTime / totalMillis.toFloat())
 
-    Box(modifier) {
+    val isVisible = viewModel.timerStateFinish && automaticMode
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // 🌊 Dalga animasyonu en altta
+        AnimatedCircularWave(isVisible = isVisible)
+
+        // 🎯 Zamanlayıcı çemberi
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidth = 28f
             val radius = size.minDimension / 2 - strokeWidth
@@ -294,6 +341,7 @@ fun TimerCircle(
             )
         }
 
+        // ⏳ Geriye kalan süre (en üstte olacak)
         Text(
             text = "${remainingHour.toString().padStart(2, '0')} : ${remainingMinute.toString().padStart(2, '0')} : ${remainingSecond.toString().padStart(2, '0')}",
             fontSize = 24.sp,
@@ -302,6 +350,7 @@ fun TimerCircle(
         )
     }
 }
+
 
 @Composable
 fun TimerAddDialog(onDismiss: () -> Unit, saveFunction: (TimerItem) -> Unit) {
