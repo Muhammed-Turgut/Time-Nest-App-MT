@@ -1,6 +1,7 @@
 package com.muhammedturgut.timenestapp.TimerScreen
 
 import android.os.CountDownTimer
+import android.text.BoringLayout
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,19 +44,24 @@ fun TimerScreen(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var isRunning by remember { mutableStateOf(false) }
-    var timerState by remember { mutableStateOf(true) }
+    var timerState by remember { mutableStateOf(false) }
     var timerStateOption by remember { mutableStateOf(false) }
     var backgroundTimer by remember { mutableStateOf(Color(0xFFFFFFFF)) }
 
     if (timerStateOption){
         LaunchedEffect(Unit) {
-            while (true) {
+            var indeks=0
+            while (timerStateOption) {
                 backgroundTimer = if (backgroundTimer == Color(0xFFFFFFFF)) {
                     Color(0xFFFF0000)
                 } else {
                     Color(0xFFFFFFFF)
                 }
                 delay(1500)
+                indeks++
+                if(indeks==10){
+                    timerStateOption=false
+                }
             }
         }
     }
@@ -89,35 +95,21 @@ fun TimerScreen(
                     .padding(top = 24.dp)
             ) {
 
-                var index by remember { mutableStateOf(0) }
+               if(item.isNotEmpty()){
+                  key(item[0]){
+                      TimerCircle(item[0],timerState=timerState, deleteFunction,onTimerFinish = {
+                          deleteFunction(item[0])
+                          timerState=false
+                          timerStateOption=true
+                      })
+                  }
+               }
+                else{
+                   TimerCircle(TimerItem("",0,0,0,0),timerState=false, deleteFunction)
+               }
 
-                if (item.isEmpty()) {
-                    TimerCircle(TimerItem("", 0, 0, 0, 0), isRunning = isRunning, onTimerFinish = {
-                        isRunning = false
-                    })
-                } else {
-                    TimerCircle(item[index], isRunning = isRunning, onTimerFinish = {
-                        timerStateOption = true
-                        timerState = !timerState
-                        if (timerState) {
-                            timerStateOption = false
-                        }
-                        if (item.isNotEmpty()) {
-                            deleteFunction(item[index]) // Mevcut öğeyi sil
-                            updateFunction(item[index])
-                            val updatedItem = item.sortedBy { it.timerOrder } // Güncellenmiş liste
-                            if (updatedItem.isNotEmpty()) {
-                                index = (index + 1) % updatedItem.size
-                                isRunning = true
-                            } else {
-                                isRunning = false
-                            }
-                        } else {
-                            isRunning = false // Liste boşsa durdur
-                        }
-                    })
-                }
             }
+
 
             Row(
                 modifier = Modifier
@@ -138,7 +130,10 @@ fun TimerScreen(
                 )
 
                 Image(
-                    painter = painterResource(if(timerState) R.drawable.timerstatebutton else R.drawable.timerstatetwobutton),
+                    painter = painterResource(
+                        if(timerState) R.drawable.timerstatetwobutton
+                        else R.drawable.timerstatebutton
+                    ),
                     contentDescription = null,
                     modifier = Modifier
                         .padding(start = 8.dp)
@@ -149,6 +144,7 @@ fun TimerScreen(
                             isRunning = !isRunning
                         }
                 )
+
 
                 Image(
                     painter = painterResource(R.drawable.timeraddbutton),
@@ -234,7 +230,8 @@ fun TimerRow(timer: TimerItem, deleteFunction: (TimerItem) -> Unit) {
 @Composable
 fun TimerCircle(
     totalTime: TimerItem,
-    isRunning: Boolean,
+    timerState:Boolean,
+    deleteFunction: (TimerItem) -> Unit,
     onTimerFinish: () -> Unit = {},
     modifier: Modifier = Modifier.size(200.dp)
 ) {
@@ -246,8 +243,8 @@ fun TimerCircle(
 
     var timer: CountDownTimer? by remember { mutableStateOf(null) }
 
-    LaunchedEffect(isRunning) {
-        if (isRunning) {
+    LaunchedEffect(timerState) {
+        if (timerState) {
             timer?.cancel() // Var olan zamanlayıcıyı iptal et
             timer = object : CountDownTimer(remainingTime, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
@@ -262,6 +259,7 @@ fun TimerCircle(
                     remainingHour = 0
                     remainingMinute = 0
                     remainingSecond = 0
+                    deleteFunction(totalTime)
                     onTimerFinish()
                 }
             }
@@ -501,3 +499,4 @@ fun RotaryKnobb(): List<Int> {
 
     return listOf(saat, dakika, saniye)
 }
+

@@ -11,7 +11,7 @@ import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
 @Dao
 interface timerItemDao {
 
-    @Query("SELECT * FROM timer_item")
+    @Query("SELECT * FROM timer_item ORDER BY id ASC")
     suspend fun getItemWithNameAndId(): List<TimerItem>
 
     @Query("SELECT * FROM timer_item WHERE id = :id")

@@ -291,13 +291,6 @@ fun CustomDialog(onDismiss: () -> Unit, saveFunction: (Item) -> Unit) {
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    val endDatePickerDialog = DatePickerDialog(
-        context,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            endTime = "$dayOfMonth/${month + 1}/$year"
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
-    )
-
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier
