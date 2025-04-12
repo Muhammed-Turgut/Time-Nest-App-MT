@@ -1,9 +1,7 @@
 package com.muhammedturgut.timenestapp.ChainBreakingScreen
 
-import android.widget.DatePicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -33,9 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
 import com.muhammedturgut.timenestapp.R
-import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
-import java.util.Calendar
 
 @Composable
 fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Unit) {
@@ -110,7 +105,7 @@ fun ChainBreakingRow(item: ItemChain) {
     Column(
         modifier = Modifier
             .wrapContentWidth()
-            .padding(16.dp)
+            .padding(8.dp)
             .shadow(
                 elevation = 8.dp,
                 ambientColor = Color.Black,
@@ -135,7 +130,6 @@ fun ChainBreakingRow(item: ItemChain) {
                 fontSize = 18.sp,
                 textAlign = TextAlign.Start
             )
-            Image(painter = painterResource(R.drawable.rowdelete), contentDescription = null)
         }
         Text(
             text = item.chainAbout ?: "Chain About",

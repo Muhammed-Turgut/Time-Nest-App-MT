@@ -16,7 +16,10 @@ data class ItemChain (
     val chainAbout: String?,
 
     @ColumnInfo(name = "Chain_State")
-    val chainState: Int,
+    val chainState: Int
+
+   /* ,@ColumnInfo(name = "Chain_List")
+    val chainList: MutableList<Boolean> = MutableList(365) { false }*/
 
 ) {
     @PrimaryKey(autoGenerate = true)

@@ -43,6 +43,7 @@ class TimerViewModelTwo() : ViewModel() {
                 remainingSecond = ((millisUntilFinished % 60000) / 1000).toInt()
             }
 
+
             override fun onFinish() {
                 remainingTime = 0
                 remainingHour = 0
@@ -51,8 +52,8 @@ class TimerViewModelTwo() : ViewModel() {
                 timerState = true
                 timerStateFinish=true
                 onTimerFinish()
-
             }
+
         }.apply { start() }
 
         timerState = true

@@ -38,8 +38,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.TimerScreen.Model.TimerItem
 import com.muhammedturgut.timenestapp.TimerScreen.ViewModel.TimerViewModelTwo
+import com.muhammedturgut.timenestapp.ui.theme.Black
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimerRowColor
+import com.muhammedturgut.timenestapp.ui.theme.White
 
 
 @Composable
@@ -104,13 +106,25 @@ fun TimerScreen(
                         )
                     }
                 } else {
-                    TimerCircle(
-                        totalTime = TimerItem("", 0, 0, 0, 0),
-                        timerState = false,
-                        deleteFunction = deleteFunction,
-                        viewModel = timerViewModel,
-                        automaticMode = automaticMode
-                    )
+                    if(timerViewModel.timerStateFinish){
+                        TimerCircle(
+                            totalTime = TimerItem("", 0, 0, 0, 0),
+                            timerState = false,
+                            deleteFunction = deleteFunction,
+                            viewModel = timerViewModel,
+                            automaticMode = automaticMode
+                        )
+                    }
+                    else{
+                        TimerCircle(
+                            totalTime = TimerItem("", 0, 0, 0, 0),
+                            timerState = true,
+                            deleteFunction = deleteFunction,
+                            viewModel = timerViewModel,
+                            automaticMode = automaticMode
+                        )
+                    }
+
                 }
 
             }
@@ -315,10 +329,10 @@ fun TimerCircle(
     val isVisible = viewModel.timerStateFinish && automaticMode
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        // 🌊 Dalga animasyonu en altta
+        //Dalga animasyonu en altta
         AnimatedCircularWave(isVisible = isVisible)
 
-        // 🎯 Zamanlayıcı çemberi
+        // Zamanlayıcı çemberi
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidth = 28f
             val radius = size.minDimension / 2 - strokeWidth
@@ -344,9 +358,11 @@ fun TimerCircle(
         // ⏳ Geriye kalan süre (en üstte olacak)
         Text(
             text = "${remainingHour.toString().padStart(2, '0')} : ${remainingMinute.toString().padStart(2, '0')} : ${remainingSecond.toString().padStart(2, '0')}",
+            color = if(isVisible) White else Black,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
+
         )
     }
 }
