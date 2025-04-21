@@ -2,6 +2,8 @@ package com.muhammedturgut.timenestapp.ChainBreakingScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,12 +30,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
 import com.muhammedturgut.timenestapp.R
+import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 
 @Composable
-fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Unit) {
+fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Unit,delete: (ItemChain) -> Unit,navHostController: NavHostController) {
     var showDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -59,7 +63,8 @@ fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Uni
 
             LazyColumn {
                 items(items) { item ->
-                    ChainBreakingRow(item)
+                    ChainBreakingRow(item, delete = {
+                        delete(item) }, navHostController =navHostController)
                 }
             }
 
@@ -101,62 +106,82 @@ fun FABChain(onClick: () -> Unit) {
 }
 
 @Composable
-fun ChainBreakingRow(item: ItemChain) {
+fun ChainBreakingRow(
+    item: ItemChain,
+    navHostController: NavHostController,
+    delete: (ItemChain) -> Unit
+) {
+    val backgroundColor = Color.White
+    val textColor = Color.Black
+    val isChainContinuing = item.chainState == 1
+
+    val interactionSource = remember { MutableInteractionSource() }
+
     Column(
         modifier = Modifier
-            .wrapContentWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null // Ripple efektini kaldırır
+            ) {
+                navHostController.navigate("DetailsChanScreen")
+            }
+            .fillMaxWidth()
             .padding(8.dp)
             .shadow(
                 elevation = 8.dp,
-                ambientColor = Color.Black,
-                spotColor = Color.Black,
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(8.dp)
             )
             .clip(RoundedCornerShape(8.dp))
-            .background(color = Color(0xFFF7F7F7)),
-        horizontalAlignment = Alignment.Start
+            .background(color = backgroundColor)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 8.dp, top = 8.dp, end = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(painter = painterResource(R.drawable.chainbreakingicon), contentDescription = null)
+            Image(
+                painter = painterResource(R.drawable.chainbreakingicon),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = item.chainName ?: "Chain Name",
                 modifier = Modifier.weight(1f),
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
+                color = textColor
             )
         }
         Text(
             text = item.chainAbout ?: "Chain About",
             modifier = Modifier
-                .align(Alignment.Start)
-                .padding(8.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            color = textColor,
+            fontSize = 14.sp
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if(item.chainState == 1) "Devam ediyor" else "Zincir Kırıldı",
-                fontWeight = FontWeight.SemiBold,
+                text = if (isChainContinuing) "Devam ediyor" else "Zincir Kırıldı",
+                fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .weight(1f)
+                color = if (isChainContinuing) Color.Green else Color.Red,
+                modifier = Modifier.weight(1f)
             )
             Image(
                 painter = painterResource(R.drawable.trashchanrow),
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(start = 12.dp, end = 16.dp)
-                    .size(38.dp)
+                    .size(36.dp)
+                    .clickable { delete(item) }
             )
         }
     }
@@ -166,7 +191,8 @@ fun ChainBreakingRow(item: ItemChain) {
 fun CustomDialogChain(onDismiss: () -> Unit, saveFunction: (ItemChain) -> Unit) {
     var itemChainName by remember { mutableStateOf("") }
     var itemChainAbout by remember { mutableStateOf("") }
-
+    var chainGoal by remember { mutableStateOf("") }
+    var chainStartDate by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -174,46 +200,78 @@ fun CustomDialogChain(onDismiss: () -> Unit, saveFunction: (ItemChain) -> Unit) 
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(16.dp),
-            shape = RoundedCornerShape(8.dp),
-            color = Color.White
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White,
+            tonalElevation = 4.dp,
+            shadowElevation = 8.dp
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                Text(
+                    text = "Yeni Görev Ekle",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = PrimaryColor
+                )
+
                 OutlinedTextField(
                     value = itemChainName,
                     onValueChange = { itemChainName = it },
-                    label = { Text("Görev Adı") },
+                    label = { Text("Zincir Adı") },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = itemChainAbout,
                     onValueChange = { itemChainAbout = it },
-                    label = { Text("Görev Hakkında") },
+                    label = { Text("Zincir Açıklaması") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                OutlinedTextField(
+                    value = chainGoal,
+                    onValueChange = { chainGoal = it },
+                    label = { Text("Hedef (örn: 30 gün)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                /*OutlinedTextField(
+                    value = chainStartDate,
+                    onValueChange = { chainStartDate = it },
+                    label = { Text("Başlangıç Tarihi (örn: 21.04.2025)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )*/ //Bunu otomotik olarak kendim alacağım.
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Button(
+                    OutlinedButton(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray)
                     ) {
                         Text("İptal")
                     }
 
+                    Spacer(modifier = Modifier.width(16.dp))
+
                     Button(
                         onClick = {
                             if (itemChainName.isNotBlank()) {
-                                saveFunction(ItemChain(chainName=itemChainName, chainAbout = itemChainAbout, 1))
+                                // Burada chainGoal ve chainStartDate henüz ItemChain modeline eklenmediği için dahil edilmedi
+                                saveFunction(ItemChain(chainName = itemChainName, chainAbout = itemChainAbout, 1, 0))
                                 onDismiss()
                             }
                         },
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                     ) {
                         Text("Kaydet")

@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
+import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemDetailChain
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.RoomDB.ItemChainDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,17 +20,26 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
     private val db = Room.databaseBuilder(
         getApplication(),
         ItemChainDatabase::class.java,
-        "chainItem"
+        "chain_database"
     ).build()
 
     private val itemChainDao = db.itemChainDao()
+    private val itemDetailDao = db.itemDetailDao()
+
+
     private val _itemList = MutableStateFlow<List<ItemChain>>(emptyList())
     val itemListChain: StateFlow<List<ItemChain>> = _itemList
-    val selectedItem = mutableStateOf(ItemChain("", "", 1))
+    val selectedItem = mutableStateOf(ItemChain("", "", 1,1))
+
+    private val _itemChainDaoDetaisl = MutableStateFlow<List<ItemDetailChain>>(emptyList())
+    val itemListDeatilsChain: StateFlow<List<ItemDetailChain>> = _itemChainDaoDetaisl
+
+
 
 
     init {
         getItemList()
+        getItemListDetails()
     }
 
     fun getItemList(){
@@ -44,9 +54,21 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getItem(id:Int){
+    fun getItemListDetails(){
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val items = itemDetailDao.getDetailsByNotId(selectedItem.value.notId)
+                _itemChainDaoDetaisl.value = items
+
+            }catch (e:Exception){
+                println("Hata: ${e.message}")
+            }
+        }
+    }
+
+    fun getItemNot(notId:Int){
         viewModelScope.launch (Dispatchers.IO){
-            val items=itemChainDao.getItemById(id)
+            val items=itemChainDao.getItemBynOTId(notId)
             items?.let {
                 selectedItem.value=items
             }

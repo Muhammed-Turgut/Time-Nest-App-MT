@@ -1,9 +1,11 @@
 package com.muhammedturgut.timenestapp.ChainBreakingScreen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,28 +18,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
+import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemDetailChain
 import com.muhammedturgut.timenestapp.R
 
 @Composable
-fun DetailsScreenChainBreaking() {
+fun DetailsScreenChainBreaking(navHostController: NavHostController,itemsDetails: List<ItemDetailChain>,itemsChain:ItemChain) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp, start = 16.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.backbutton),
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+        Column(modifier = Modifier.padding(top = 16.dp)) {
+
+                IconButton(
+                    onClick = { navHostController.navigate("MainPage") },
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.backbutton),
+                        contentDescription = "Back"
+                    )
+                }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp, start = 16.dp),
+                    .padding(top = 4.dp, start = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
@@ -47,7 +52,7 @@ fun DetailsScreenChainBreaking() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Chain Name",
+                    text = "${itemsChain.chainName}",
                     fontWeight = FontWeight.Medium,
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center,
@@ -61,7 +66,7 @@ fun DetailsScreenChainBreaking() {
                     .padding(start = 16.dp, end = 16.dp)
             ) {
                 Text(
-                    text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                    text = "${itemsChain.chainAbout}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
@@ -99,7 +104,7 @@ fun DetailsScreenChainBreaking() {
             Column(modifier = Modifier.fillMaxWidth()){
 
                 LazyColumn {
-                   items(detailsListItem){ item ->
+                   items(itemsDetails){ item ->
                        DetailsRowDay(item)
 
                    }
@@ -118,10 +123,14 @@ fun detailsDays(){
 }
 
 @Composable
-fun DetailsRowDay(item:detailsList){
-    Column {
+fun DetailsRowDay(item:ItemDetailChain){
+    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp)){
         Row {
-            Text(text="04 Mart 2025", fontSize = 13.3.sp, fontWeight = FontWeight.SemiBold)
+            Text(text="",
+                fontSize = 13.3.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f))
+
             Image(painter = painterResource(R.drawable.detailsaddbutton), contentDescription = null)
         }
     Text(text="merhaba", fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
@@ -131,10 +140,6 @@ fun DetailsRowDay(item:detailsList){
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreviewDetails() {
-    DetailsScreenChainBreaking()
+    val navHostController = rememberNavController()
+
 }
-
-val detailsListItem= listOf(
-    detailsList("Kitap Oku"," Text(text=\"04 Mart 2025\", fontSize = 13.3.sp, fontWeight = FontWeight.SemiBold)","Bu notum"))
-
-class detailsList(name:String,about:String,note:String){}
