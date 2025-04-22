@@ -42,7 +42,7 @@ import com.muhammedturgut.timenestapp.ToDo.Screens.ViewModel.GolasMissionViewMod
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColorWhite
 
 @Composable
-fun MainPage(viewModelToDo:GolasMissionViewModel,viewModelChain: ChainViewModel,viewModelTimer: TimerViewModel,navController: NavHostController){
+fun MainPage(viewModelToDo:GolasMissionViewModel,viewModelChain: ChainViewModel,viewModelTimer: TimerViewModel){
     val navControllerBottom = rememberNavController()
 
     Scaffold(
@@ -91,16 +91,26 @@ fun MainPage(viewModelToDo:GolasMissionViewModel,viewModelChain: ChainViewModel,
                 )
             }
             composable("calendar") {
+                // Seçili öğeyi tutan state
+                var selectedItem by remember { mutableStateOf<ItemChain?>(null) }
+
+                // Verileri çek
                 LaunchedEffect(Unit) {
                     viewModelChain.getItemList()
+                    viewModelChain.getItemListDetails()
                 }
                 val itemList by viewModelChain.itemListChain.collectAsState(initial = emptyList())
+                val itemsDetailsList by viewModelChain.itemListDeatilsChain.collectAsState(initial = emptyList())
 
-                ChainBreakingScreen(itemList,
-                    saveFunction = { item-> viewModelChain.saveItem(item) },
-                    delete = { item ->  viewModelChain.deleteItem(item)},
-                    navController)
+                    ScreenNavigation(
+                        items = itemList,
+                        saveFunction = { item -> viewModelChain.saveItem(item) },
+                        delete = { item -> viewModelChain.deleteItem(item) },
+                        itemsDetails = itemsDetailsList,
+                        viewModel = viewModelChain
+                    )
             }
+
 
 
             composable("timer") {

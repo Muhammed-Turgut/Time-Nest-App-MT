@@ -5,12 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ChainWithDetails
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemDetailChain
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.RoomDB.ItemChainDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 
@@ -66,13 +69,8 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getItemNot(notId:Int){
-        viewModelScope.launch (Dispatchers.IO){
-            val items=itemChainDao.getItemBynOTId(notId)
-            items?.let {
-                selectedItem.value=items
-            }
-        }
+    suspend fun getItemNot(notId: Int): ItemChain? {
+        return itemChainDao.getItemByNOTId(notId)
     }
 
     fun saveItem(item: ItemChain){

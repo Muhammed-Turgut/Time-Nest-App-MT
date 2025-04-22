@@ -4,6 +4,7 @@ import androidx.room.*
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ChainWithDetails
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemDetailChain
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ItemChainDao {
@@ -15,11 +16,12 @@ interface ItemChainDao {
     suspend fun getItemById(id: Int): ItemChain?
 
     @Query("SELECT * FROM chainItem WHERE notId = :notId")
-    suspend fun getItemBynOTId(notId: Int): ItemChain?
+    suspend fun getItemByNOTId(notId: Int): ItemChain?
 
     @Transaction
-    @Query("SELECT * FROM chainItem WHERE notId = :notId")
-    suspend fun getChainWithDetails(notId: Int): List<ChainWithDetails>
+    @Query("SELECT * FROM chainItem")
+    fun getAllChainsWithDetails(): Flow<List<ChainWithDetails>>
+
 
     @Insert
     suspend fun insert(item: ItemChain)

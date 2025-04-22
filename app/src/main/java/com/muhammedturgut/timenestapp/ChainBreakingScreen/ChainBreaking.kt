@@ -37,7 +37,11 @@ import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 
 @Composable
-fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Unit,delete: (ItemChain) -> Unit,navHostController: NavHostController) {
+fun ChainBreakingScreen(items: List<ItemChain>,
+                        saveFunction: (ItemChain) -> Unit,
+                        delete: (ItemChain) -> Unit,
+                        navHostController: NavHostController) {
+
     var showDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -64,7 +68,8 @@ fun ChainBreakingScreen(items: List<ItemChain>, saveFunction: (ItemChain) -> Uni
             LazyColumn {
                 items(items) { item ->
                     ChainBreakingRow(item, delete = {
-                        delete(item) }, navHostController =navHostController)
+                        delete(item) },
+                        navHostController=navHostController,)
                 }
             }
 
@@ -108,8 +113,9 @@ fun FABChain(onClick: () -> Unit) {
 @Composable
 fun ChainBreakingRow(
     item: ItemChain,
-    navHostController: NavHostController,
-    delete: (ItemChain) -> Unit
+    delete: (ItemChain) -> Unit,
+    navHostController: NavHostController
+
 ) {
     val backgroundColor = Color.White
     val textColor = Color.Black
@@ -123,7 +129,7 @@ fun ChainBreakingRow(
                 interactionSource = interactionSource,
                 indication = null // Ripple efektini kaldırır
             ) {
-                navHostController.navigate("DetailsChanScreen")
+                navHostController.navigate("DetailsChanScreen/${item.notId}")
             }
             .fillMaxWidth()
             .padding(8.dp)
