@@ -52,7 +52,7 @@ fun ChainBreakingScreen(items: List<ItemChain>,
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -115,7 +115,6 @@ fun ChainBreakingRow(
     item: ItemChain,
     delete: (ItemChain) -> Unit,
     navHostController: NavHostController
-
 ) {
     val backgroundColor = Color.White
     val textColor = Color.Black
@@ -134,10 +133,10 @@ fun ChainBreakingRow(
             .fillMaxWidth()
             .padding(8.dp)
             .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(8.dp)
+                elevation = 4.dp,
+                shape = RoundedCornerShape(4.dp)
             )
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(4.dp))
             .background(color = backgroundColor)
     ) {
         Row(
@@ -272,8 +271,13 @@ fun CustomDialogChain(onDismiss: () -> Unit, saveFunction: (ItemChain) -> Unit) 
                     Button(
                         onClick = {
                             if (itemChainName.isNotBlank()) {
-                                // Burada chainGoal ve chainStartDate henüz ItemChain modeline eklenmediği için dahil edilmedi
-                                saveFunction(ItemChain(chainName = itemChainName, chainAbout = itemChainAbout, 1, 0))
+                                val chain = ItemChain(
+                                    chainName = itemChainName,
+                                    chainAbout = itemChainAbout,
+                                    chainState = 1, // Örn: başlangıçta 0 = "aktif" ya da "başlamadı"
+                                    notId = 0 // geçici, DAO'da otomatik artacak şekilde ayarlanmalı
+                                )
+                                saveFunction(chain)
                                 onDismiss()
                             }
                         },
@@ -286,10 +290,4 @@ fun CustomDialogChain(onDismiss: () -> Unit, saveFunction: (ItemChain) -> Unit) 
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-
 }

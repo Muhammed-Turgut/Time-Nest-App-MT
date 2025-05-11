@@ -2,6 +2,7 @@ package com.muhammedturgut.timenestapp.Activitys
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,8 +19,8 @@ fun ScreenNavigation(
     items: List<ItemChain>,
     saveFunction: (ItemChain) -> Unit,
     delete: (ItemChain) -> Unit,
-    itemsDetails: List<ItemDetailChain>,
-    viewModel: ChainViewModel
+    viewModel: ChainViewModel,
+    saveFunctionDetail: (ItemDetailChain) -> Unit
 
 ) {
     val navController = rememberNavController()
@@ -46,8 +47,9 @@ fun ScreenNavigation(
             DetailsScreenChainBreaking(
                 navHostController = navController,
                 notId = notId,
-                itemsDetails = itemsDetails,
-                viewModel=viewModel
+                viewModel=viewModel,
+                saveFunction = {item->
+                    saveFunctionDetail(item)}
             )
         }
     }

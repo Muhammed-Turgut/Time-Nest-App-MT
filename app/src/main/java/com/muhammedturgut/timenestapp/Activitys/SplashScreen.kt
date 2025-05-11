@@ -21,6 +21,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import app.rive.runtime.kotlin.RiveAnimationView
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
@@ -47,7 +49,7 @@ class SplashScreen : ComponentActivity() {
             val intent= Intent(this@SplashScreen, MainActivity::class.java)
             startActivity(intent)
             finish()
-        },3000)
+        },2500)
     }
 }
 
@@ -57,14 +59,21 @@ Box(modifier = Modifier.fillMaxSize()
     .background(PrimaryColor)){
 
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Image(painter = painterResource(R.drawable.timenest),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(140.dp, 90.dp))
+        RiveAnimationComposable()
     }
 
 
 }
+}
+
+@Composable
+fun RiveAnimationComposable() {
+    AndroidView(factory = { context ->
+        RiveAnimationView(context).apply {
+            setRiveResource(R.raw.timenest)
+            play()
+        }
+    })
 }
 
 

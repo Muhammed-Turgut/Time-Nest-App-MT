@@ -97,17 +97,16 @@ fun MainPage(viewModelToDo:GolasMissionViewModel,viewModelChain: ChainViewModel,
                 // Verileri çek
                 LaunchedEffect(Unit) {
                     viewModelChain.getItemList()
-                    viewModelChain.getItemListDetails()
                 }
                 val itemList by viewModelChain.itemListChain.collectAsState(initial = emptyList())
-                val itemsDetailsList by viewModelChain.itemListDeatilsChain.collectAsState(initial = emptyList())
 
                     ScreenNavigation(
                         items = itemList,
                         saveFunction = { item -> viewModelChain.saveItem(item) },
                         delete = { item -> viewModelChain.deleteItem(item) },
-                        itemsDetails = itemsDetailsList,
-                        viewModel = viewModelChain
+
+                        viewModel = viewModelChain,
+                        saveFunctionDetail = {item -> viewModelChain.saveItemDetail(item)}
                     )
             }
 

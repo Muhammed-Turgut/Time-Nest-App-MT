@@ -1,11 +1,13 @@
 package com.muhammedturgut.timenestapp.ChainBreakingScreen.ViewModel
 
 import android.app.Application
+import android.icu.text.DateFormat
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
-import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ChainWithDetails
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemDetailChain
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.RoomDB.ItemChainDatabase
@@ -15,7 +17,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 
 class ChainViewModel(application: Application) : AndroidViewModel(application) {
@@ -32,17 +39,18 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _itemList = MutableStateFlow<List<ItemChain>>(emptyList())
     val itemListChain: StateFlow<List<ItemChain>> = _itemList
-    val selectedItem = mutableStateOf(ItemChain("", "", 1,1))
 
-    private val _itemChainDaoDetaisl = MutableStateFlow<List<ItemDetailChain>>(emptyList())
-    val itemListDeatilsChain: StateFlow<List<ItemDetailChain>> = _itemChainDaoDetaisl
+    val selectedItem = mutableStateOf(ItemChain(chainName = "", chainAbout =  "", chainState = 1, notId = 0))
+
+    private val _itemChainDaoDetails = MutableStateFlow<List<ItemDetailChain>>(emptyList())
+    val itemListDetailsChain: StateFlow<List<ItemDetailChain>> = _itemChainDaoDetails
 
 
 
 
     init {
         getItemList()
-        getItemListDetails()
+        getItemListDetails(1)
     }
 
     fun getItemList(){
@@ -57,11 +65,11 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getItemListDetails(){
+    fun getItemListDetails(notId: Int){
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val items = itemDetailDao.getDetailsByNotId(selectedItem.value.notId)
-                _itemChainDaoDetaisl.value = items
+                val items = itemDetailDao.getDetailsByNotId(notId)
+                _itemChainDaoDetails.value = items
 
             }catch (e:Exception){
                 println("Hata: ${e.message}")
@@ -82,11 +90,26 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun saveItemDetail(item: ItemDetailChain){
+        viewModelScope.launch(Dispatchers.IO){
+            itemDetailDao.insert(item)
+            val updateItem = itemDetailDao.getDetailsByNotId(item.notOwnerId)
+            _itemChainDaoDetails.value=updateItem
+        }
+    }
+
     fun deleteItem(item: ItemChain){
         viewModelScope.launch(Dispatchers.IO) {
             itemChainDao.delete(item)
             val updateItem=itemChainDao.getItemWithNameAndId()
             _itemList.value=updateItem
+        }
+    }
+    fun deleteItemDetail(item: ItemDetailChain,notId: Int){
+        viewModelScope.launch(Dispatchers.IO) {
+            itemDetailDao.delete(item)
+            val updateItem = itemDetailDao.getDetailsByNotId(notId)
+            _itemChainDaoDetails.value = updateItem
         }
     }
 
@@ -98,5 +121,62 @@ class ChainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun nowMonth():Int{ //Güncel Ayın indekisin veriyor.
+        val today = LocalDate.now()
+        val currentMonthName = today.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
+        val currentMonthIndex = today.monthValue - 1
+        return currentMonthIndex
+    }
+
+    fun getYearWithDays(): DateTime {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dayOfWeekFormat = SimpleDateFormat("EEE", Locale.getDefault())
+        val now = Calendar.getInstance()
+        val monthsWithDays = mutableListOf<MonthWithDays>()
+
+        val currentYear = SimpleDateFormat("yyyy", Locale.getDefault()).format(now.time)
+
+        for (monthIndex in 0 until 12) {
+            val currentDate = Calendar.getInstance() // her döngüde sıfırla
+            currentDate.set(Calendar.YEAR, now.get(Calendar.YEAR))
+            currentDate.set(Calendar.MONTH, monthIndex)
+            currentDate.set(Calendar.DAY_OF_MONTH, 1)
+
+            val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(currentDate.time)
+            val yearName = SimpleDateFormat("yyyy", Locale.getDefault()).format(currentDate.time)
+            val daysInMonth = currentDate.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+            val days = mutableListOf<DayInfo>()
+            for (day in 1..daysInMonth) {
+                currentDate.set(Calendar.DAY_OF_MONTH, day)
+                val dayOfWeek = dayOfWeekFormat.format(currentDate.time)
+                days.add(DayInfo(dayOfWeek = dayOfWeek, dayNumber = day))
+            }
+
+            monthsWithDays.add(MonthWithDays(monthName = monthName, days = days))
+        }
+
+        return DateTime(year = currentYear, monthName = monthsWithDays)
+    }
+
+    fun getMonthData(monthIndex: Int): MonthWithDays {
+        val allMonths = getYearWithDays()
+        return allMonths.monthName[monthIndex] // 0 = Ocak, 1 = Şubat, ...
+    }
 
 }
+
+data class DateTime(
+    val year: String,
+    val monthName: List<MonthWithDays>
+)
+
+data class MonthWithDays(
+    val monthName: String,
+    val days: List<DayInfo>
+)
+
+data class DayInfo(
+    val dayOfWeek: String,  // Örneğin: "Pzt"
+    val dayNumber: Int      // Örneğin: 5
+)

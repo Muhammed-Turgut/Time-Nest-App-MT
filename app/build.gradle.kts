@@ -80,6 +80,9 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     implementation("com.google.code.gson:gson:2.12.1")
 
+    //Animasyonlar için
+    implementation("app.rive:rive-android:9.6.5")
+    implementation("androidx.startup:startup-runtime:1.1.1")
 
 
     implementation ("androidx.navigation:navigation-compose:2.8.7-alpha10")
