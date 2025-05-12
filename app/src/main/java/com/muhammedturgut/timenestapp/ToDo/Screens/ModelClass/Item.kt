@@ -7,16 +7,16 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "item")
 data class Item(
     @ColumnInfo(name = "mission_Name")
-    val missionName: String?,
+    var missionName: String?,
 
     @ColumnInfo(name = "mission_about")
-    val missionAbout: String?,
+    var missionAbout: String?,
 
     @ColumnInfo(name = "start_Time")
-    val startTime: String?,
+    var startTime: String?,
 
     @ColumnInfo(name = "end_Time")
-    val endTime: String?,
+    var endTime: String?,
 
     @ColumnInfo(name = "State")
     var State: Int?

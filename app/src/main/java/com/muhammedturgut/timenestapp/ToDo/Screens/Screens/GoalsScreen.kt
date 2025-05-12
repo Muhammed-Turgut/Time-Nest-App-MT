@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -60,82 +61,113 @@ import com.muhammedturgut.timenestapp.ui.theme.RowRed
 import com.muhammedturgut.timenestapp.ui.theme.RowYellow
 import kotlin.random.Random
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GoalsScreen(item: List<Item>, saveFunction: (Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
+    var selectedItemToUpdate by remember { mutableStateOf<Item?>(null) }
+    var updateShowDialog by remember { mutableStateOf(false) }
 
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.onTertiaryContainer)
+    CompositionLocalProvider(
+        LocalOverscrollConfiguration provides null
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(item) { currentItem ->
-                GoalsROW(
-                    item = currentItem,
-                    UpdateFuncition = UpdateFuncition,
-                    deleteItem = deleteItem
-                )
-            }
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
+                .background(MaterialTheme.colorScheme.onTertiaryContainer)
         ) {
-            FAB { showDialog = true }
-        }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(item) { currentItem ->
+                    GoalsROW(
+                        item = currentItem,
+                        UpdateFuncition = UpdateFuncition,
+                        deleteItem = deleteItem,
+                        showDialog = { it, item ->
+                            updateShowDialog = it
+                            selectedItemToUpdate = item
 
-        AnimatedVisibility(visible = showDialog, modifier = Modifier.fillMaxWidth()) {
-            CustomDialog(
-                onDismiss = { showDialog = false },
-                saveFunction = { newItem ->
-                    saveFunction(newItem)
-                    showDialog = false
+                        }
+
+                    )
                 }
-            )
-        }
+            }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                FAB { showDialog = true }
+            }
+
+            AnimatedVisibility(visible = showDialog, modifier = Modifier.fillMaxWidth()) {
+                CustomDialog(
+                    onDismiss = { showDialog = false },
+                    saveFunction = { newItem ->
+                        saveFunction(newItem)
+                        showDialog = false
+                    }
+                )
+            }
+
+            AnimatedVisibility(visible = updateShowDialog, modifier = Modifier.fillMaxWidth()) {
+                UpdateDialog(
+                    onDismiss = { updateShowDialog = false },
+                    updateFuncition = { newItem ->
+                        UpdateFuncition(newItem)
+                        showDialog = false
+                    },
+                    item = selectedItemToUpdate ?: Item("null", "null", "null", "null", 1)
+                )
+            }
+
+        }
     }
 }
 
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
+fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit,showDialog: (Boolean, Item) -> Unit) {
 
     var isLongPressed by remember { mutableStateOf(false) } // Basılı tutulduğunda değişecek
     var isCompleted by remember { mutableStateOf(false) }
 
-        val cardWidth by animateDpAsState(
-            targetValue = if (isCompleted || isLongPressed ) 370.dp else 400.dp, // Dp.Unspecified yerine sabit değer kullanıldı
-            animationSpec = tween(durationMillis = 300),
-            label = "CardWidthAnimation"
-        )
+    val cardWidth by animateDpAsState(
+        targetValue = if (isCompleted || isLongPressed) 370.dp else 400.dp, // Dp.Unspecified yerine sabit değer kullanıldı
+        animationSpec = tween(durationMillis = 300),
+        label = "CardWidthAnimation"
+    )
+    val calendar = Calendar.getInstance()
+    val currentDate = "${calendar.get(Calendar.DAY_OF_MONTH)}/${calendar.get(Calendar.MONTH) + 1}/${
+        calendar.get(Calendar.YEAR)
+    }"
+    var endTime by remember { mutableStateOf(currentDate) }
 
 
+    val listRowColor = listOf(RowYellow, RowDarkBlue, RowOrange, RowRed)
+    val randomColor =
+        remember { listRowColor[Random.nextInt(listRowColor.size)] } // Tekrar seçilmesini önlemek için remember eklendi
 
-
-
-        val listRowColor = listOf(RowYellow, RowDarkBlue, RowOrange, RowRed)
-        val randomColor = remember { listRowColor[Random.nextInt(listRowColor.size)] } // Tekrar seçilmesini önlemek için remember eklendi
-
+    CompositionLocalProvider(
+        LocalOverscrollConfiguration provides null
+    ) {
         Card(
             modifier = Modifier
                 .width(cardWidth)// Başlangıç değeri artık kesin
                 .combinedClickable(
                     onClick = {
-                        isLongPressed=false
+                        isLongPressed = false
                         isCompleted = !isCompleted
                     }, // Normal tıklamaya işlem koymadık, sadece uzun basınca açılacak
                     onLongClick = {
-                        isCompleted=false
+                        isCompleted = false
                         isLongPressed = !isLongPressed // Basılı tutulduğunda genişlik değişir
                     })
                 .padding(top = 6.dp, bottom = 10.dp)
@@ -197,7 +229,11 @@ fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> 
                             Image(
                                 painter = painterResource(R.drawable.roweditt),
                                 contentDescription = null,
-                                modifier = Modifier.padding(end = 8.dp)
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .clickable {
+                                        showDialog(true, item)
+                                    }
                             )
                         }
 
@@ -238,27 +274,26 @@ fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> 
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(40.dp)
-                            .background(if(isLongPressed) Color.Red else Color.Green)
+                            .background(if (isLongPressed) Color.Red else Color.Green)
                             .clickable {
-                                if(isCompleted){
-                                    item.State= 0
+                                if (isCompleted) {
+                                    item.State = 0
+                                    item.endTime = endTime
                                     UpdateFuncition(item)
-                                }
-                                else{
+                                } else {
                                     deleteItem(item)
                                 }
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isCompleted){
+                        if (isCompleted) {
                             Icon(
                                 imageVector = Icons.Default.Done,
                                 contentDescription = "Tamamlandı",
                                 tint = Color.White,
                                 modifier = Modifier.size(24.dp)
                             )
-                        }
-                        else{
+                        } else {
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Tamamlandı",
@@ -271,8 +306,7 @@ fun GoalsROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> 
             }
         }
     }
-
-
+}
 @Composable
 fun CustomDialog(onDismiss: () -> Unit, saveFunction: (Item) -> Unit) {
     var itemName by remember { mutableStateOf("") }
@@ -358,6 +392,87 @@ fun CustomDialog(onDismiss: () -> Unit, saveFunction: (Item) -> Unit) {
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                     ) {
                         Text("Kaydet")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun UpdateDialog(onDismiss: () -> Unit, updateFuncition: (Item) -> Unit, item: Item) {
+    // Initialize state with existing item values
+    var itemName by remember { mutableStateOf(item.missionName ?: "") }
+    var itemAbout by remember { mutableStateOf(item.missionAbout ?: "") }
+    var startTime by remember { mutableStateOf(item.startTime ?: "") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp),
+            shape = RoundedCornerShape(8.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = itemName,
+                    onValueChange = { itemName = it },
+                    label = { Text("Görev Adı") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = itemAbout,
+                    onValueChange = { itemAbout = it },
+                    label = { Text("Görev Hakkında") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = startTime,
+                    onValueChange = { startTime = it },
+                    label = { Text("Başlama Tarihi") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { /* Add date picker logic here */ },
+                    readOnly = true
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                    ) {
+                        Text("İptal")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (itemName.isNotBlank()) {
+                                updateFuncition(
+                                    item.copy(
+                                        missionName = itemName,
+                                        missionAbout = itemAbout,
+                                        startTime = startTime,
+                                        endTime = item.endTime,
+                                        State = 1
+                                    )
+                                )
+                                onDismiss()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                    ) {
+                        Text("Güncelle")
                     }
                 }
             }

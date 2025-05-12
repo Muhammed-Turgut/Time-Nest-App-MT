@@ -173,8 +173,6 @@ fun NavigationTopBar(
 @Composable
 fun Golas(item: List<Item>, saveFunction: (item: Item) -> Unit, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
 
-    println("Golas Screen")
-
     GoalsScreen(item,saveFunction, UpdateFuncition,deleteItem)
 }
 

@@ -1,10 +1,7 @@
 package com.muhammedturgut.timenestapp.ChainBreakingScreen.ViewModel
 
 import android.app.Application
-import android.icu.text.DateFormat
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
@@ -13,15 +10,12 @@ import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemDetailC
 import com.muhammedturgut.timenestapp.ChainBreakingScreen.RoomDB.ItemChainDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 

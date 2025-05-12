@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,6 +36,7 @@ import com.muhammedturgut.timenestapp.ChainBreakingScreen.ModelClass.ItemChain
 import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
+import com.muhammedturgut.timenestapp.ui.theme.cabinBold
 
 @Composable
 fun ChainBreakingScreen(items: List<ItemChain>,
@@ -117,7 +119,7 @@ fun ChainBreakingRow(
     navHostController: NavHostController
 ) {
     val backgroundColor = Color.White
-    val textColor = Color.Black
+    val textColor = Color.White
     val isChainContinuing = item.chainState == 1
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -141,31 +143,42 @@ fun ChainBreakingRow(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .padding(start = 4.dp, top = 4.dp)
+                .wrapContentWidth()
+                .wrapContentHeight()
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color(0xFFFFA100))
+                .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(R.drawable.chainbreakingicon),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier
+                    .padding(top = 4.dp, bottom = 4.dp, start = 4.dp)
+                    .sizeIn(maxHeight = 40.dp)
             )
+
             Spacer(modifier = Modifier.width(8.dp))
+
             Text(
                 text = item.chainName ?: "Chain Name",
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .padding(end = 8.dp),
                 fontWeight = FontWeight.Bold,
+                fontFamily = cabinBold,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Start,
                 color = textColor
             )
         }
+
         Text(
             text = item.chainAbout ?: "Chain About",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 4.dp),
-            color = textColor,
+            color = Color.Black,
             fontSize = 14.sp
         )
         Row(

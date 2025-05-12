@@ -9,6 +9,7 @@ import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,6 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -65,6 +68,7 @@ import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ToDo.Screens.Screens.CustomDialog
 import com.muhammedturgut.timenestapp.ui.theme.PrimaryColor
+import kotlinx.coroutines.delay
 import java.time.MonthDay
 import java.util.Calendar
 import kotlin.time.Duration.Companion.days
@@ -74,6 +78,8 @@ import kotlin.time.Duration.Companion.days
 fun DetailsScreenChainBreaking(navHostController: NavHostController,
                                viewModel: ChainViewModel= viewModel(),
                                notId:Int?,
+
+
                                saveFunction:(ItemDetailChain) -> Unit) {
 
     var showDialog by remember { mutableStateOf(false) }
@@ -247,42 +253,62 @@ fun DetailsScreenChainBreaking(navHostController: NavHostController,
 
 @Composable
 fun DetailsDays(monthDay: MonthWithDays) {
+    var selectedDay by remember { mutableStateOf<DayInfo?>(null) }
 
-    // LazyColumn içinde her satıra 7 öğe yerleştiriyoruz
     LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Veriyi 7'li gruplara ayırıyoruz
         items(monthDay.days.chunked(8)) { rowItems ->
-            // Satırdaki her öğe için Row oluşturuluyor
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 4.dp, end = 2.dp, top = 2.dp, bottom = 2.dp),
+                    .padding(4.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Her bir gün için DetailDaysRow çağırıyoruz
+                rowItems.forEach { day ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Eğer bu gün tıklanmışsa, üstüne dialog göster
+                        if (selectedDay == day) {
+                            LaunchedEffect(key1 = selectedDay) {
+                                delay(3000) // 3 saniye bekle
+                                selectedDay = null // sonra kapat
+                            }
+                            DayStartDialog()
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
 
-                rowItems.forEach { day->
-                    DetailDaysRow(day)
+                        DetailDaysRow(
+                            dayNameNumber = day,
+                            onClick = {
+                                selectedDay = if (selectedDay == day) null else day
+                            }
+                        )
+                    }
                 }
-                    // Day nesnesi her bir gün için
             }
         }
     }
 }
 
 
+
+
 @Composable
-fun DetailDaysRow(dayNameNumber: DayInfo){
+fun DetailDaysRow(dayNameNumber: DayInfo,onClick:() -> Unit){
 
     Box(modifier = Modifier
         .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
         .size(width = 35.dp, height = 46.dp)
         .clip(RoundedCornerShape(3.dp))
-        .background(Color(0xFFB4B4B4))){
+        .background(Color(0xFFB4B4B4))
+        .clickable{
+            onClick()
+        }){
 
         Column(Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -304,6 +330,52 @@ fun DetailDaysRow(dayNameNumber: DayInfo){
         }
     }
 
+}
+
+@Composable
+fun DayStartDialog() {
+    Box(
+        modifier = Modifier
+            .size(width = 112.dp, height = 50.dp)
+            .background(Color(0xFFF6F6F6), shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            // Onay Butonu
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFF57DA37)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.baseline_check_24),
+                    contentDescription = "Onay",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Reddetme Butonu
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFFE2D2D)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.baseline_close_24),
+                    contentDescription = "Reddet",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -404,4 +476,10 @@ fun addDialog(save:(ItemDetailChain) -> Unit, onDismiss: () -> Unit,notId:Int){
                 }
             }
         }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun displayMaterial(){
+    DayStartDialog()
 }

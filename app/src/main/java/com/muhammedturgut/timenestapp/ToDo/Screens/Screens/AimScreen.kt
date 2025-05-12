@@ -3,7 +3,9 @@ package com.muhammedturgut.timenestapp.ToDo.Screens.Screens
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,12 +32,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -50,41 +57,58 @@ import com.muhammedturgut.timenestapp.R
 import com.muhammedturgut.timenestapp.ToDo.Screens.ModelClass.Item
 import com.muhammedturgut.timenestapp.ui.theme.RowOrange
 import com.muhammedturgut.timenestapp.ui.theme.TimeNestAppTheme
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import kotlinx.coroutines.launch
 
+import java.text.SimpleDateFormat
+import java.util.*
+
+data class CalendarDay(
+    val dayOfMonth: Int,
+    val monthName: String,
+    val dayName: String,
+    val date: Date // EKLENDİ
+)
+
 @Composable
-fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit){
+fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Unit) {
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.onTertiaryContainer))
-    {
-        Row (modifier = Modifier.fillMaxSize()){
+        .background(MaterialTheme.colorScheme.onTertiaryContainer)) {
+
+        Row(modifier = Modifier.fillMaxSize()) {
 
             val days = generateDaysList()
-            val today = Calendar.getInstance() // Mevcut tarihi alın
-            val todayFormatted = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(today.time) // Bugünün tarihini formatla
+            var filterList by remember { mutableStateOf("") }
+            var selectedDate by remember { mutableStateOf("") }
 
-            // LazyListState ve CoroutineScope'u hatırla
+            val today = Calendar.getInstance()
+            val todayFormatted = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(today.time)
+
             val listState = rememberLazyListState()
             val coroutineScope = rememberCoroutineScope()
 
-            // Takvim kısmını tutacak yer
             LazyColumn(
                 state = listState,
                 modifier = Modifier.width(60.dp)
             ) {
                 items(days) { day ->
+                    val formattedDate = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(day.date)
 
-
-                    CalenderRow(day = day, isToday = isSameDay(day, today)) // isToday parametresi geçiliyor
+                    CalenderRow(
+                        day = day,
+                        isToday = isSameDay(day, today),
+                        isSelected = formattedDate == selectedDate, // tıklanan günün kontrolü
+                        updateListDay = { dateString ->
+                            filterList = dateString
+                            selectedDate = dateString // tıklanan günü güncelle
+                        }
+                    )
                 }
             }
 
             LaunchedEffect(Unit) {
-                // Mevcut günü bul ve LazyColumn'a kaydır
                 val todayIndex = days.indexOfFirst { isSameDay(it, today) }
                 if (todayIndex != -1) {
                     coroutineScope.launch {
@@ -93,105 +117,125 @@ fun AimScreen(item: List<Item>, UpdateFuncition: (Item) -> Unit, deleteItem: (It
                 }
             }
 
-            // Veri tabanı verilerin geleceği yer
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(item) { currentItem ->
-                    if(currentItem.startTime == todayFormatted){ // Tarih karşılaştırması
-                        AimROW(item=currentItem, UpdateFuncition,deleteItem)
+                    if (filterList == ""){
+                        if(currentItem.endTime == todayFormatted){ // Tarih karşılaştırması
+                            AimROW(item=currentItem, UpdateFuncition,deleteItem)
+                        }
+                    }
+                    else{
+                        if (currentItem.endTime == filterList) {
+                            AimROW(item = currentItem, UpdateFuncition, deleteItem)
+                        }
                     }
                 }
             }
         }
-
     }
 }
 
-@Composable
-fun CalenderRow(day: CalendarDay, isToday: Boolean){
 
-    val backgroundColor = if (isToday) Color(0xFFFFA500) else Color(0xFF4A90E2) // Bugünse turuncu, değilse mavi
+
+
+@Composable
+fun CalenderRow(
+    day: CalendarDay,
+    isToday: Boolean,
+    isSelected: Boolean,
+    updateListDay: (String) -> Unit
+) {
+    val backgroundColor = when {
+        isSelected -> Color(0xFF2ECC71) // Seçili gün: yeşil
+        isToday -> Color(0xFFFFA500)   // Bugün: turuncu
+        else -> Color(0xFF4A90E2)      // Normal gün: mavi
+    }
 
     Surface(
         modifier = Modifier
             .size(100.dp)
             .padding(top = 8.dp, start = 8.dp)
-            .clickable {
-
-
-
-            }, // Dairenin boyutu
-        color = backgroundColor, // Renk duruma göre ayarlanıyor
-        shape = CircleShape // Dairesel şekil
+            .clip(CircleShape)
+            .clickable(indication = null,
+                interactionSource = remember { MutableInteractionSource() }) {
+                val formattedDate = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(day.date)
+                updateListDay(formattedDate)
+            },
+        color = backgroundColor,
+        shape = CircleShape
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(4.dp)
+                .border(2.dp, Color(0xFFFFFFFF),CircleShape),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly // Metinleri eşit dağıt
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(
-                text = day.monthName, // "Mar"
+                text = day.monthName,
                 textAlign = TextAlign.Center,
-                fontSize = 16.sp, // Daha büyük font
+                lineHeight = 10.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Light,
-                color = Color.White
+                color = Color.White,
             )
 
             Text(
-                text = "%02d".format(day.dayOfMonth), // "09"
+                text = "%02d".format(day.dayOfMonth),
                 textAlign = TextAlign.Center,
-                fontSize = 24.sp, // En büyük font
+                lineHeight = 10.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color.White,
             )
 
             Text(
-                text = day.dayName, // "Pzt"
+                text = day.dayName,
+                lineHeight = 10.sp,
                 textAlign = TextAlign.Center,
-                fontSize = 16.sp, // Büyük font
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color.White
+                color = Color.White,
+
             )
         }
     }
 }
 
-fun isSameDay(day: CalendarDay, today: Calendar): Boolean {
-    val todayDay = today.get(Calendar.DAY_OF_MONTH)
-    val todayMonth = today.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale("tr"))
-    val todayDayName = today.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale("tr"))
 
-    return day.dayOfMonth == todayDay && day.monthName == todayMonth && day.dayName == todayDayName
+fun isSameDay(day: CalendarDay, today: Calendar): Boolean {
+    val todayFormatted = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(today.time)
+    val dayFormatted = SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(day.date)
+    return todayFormatted == dayFormatted
 }
 
-
-//Takvim için yılları alıyoruz.
 fun generateDaysList(): List<CalendarDay> {
     val daysList = mutableListOf<CalendarDay>()
     val calendar = Calendar.getInstance()
-
-    // Mevcut yılı al
     val currentYear = calendar.get(Calendar.YEAR)
-    // 1 Ocak mevcut yıldan başla
     calendar.set(currentYear, Calendar.JANUARY, 1)
 
-    val monthFormat = SimpleDateFormat("MMM", Locale("tr")) // "Ocak", "Şubat"
-    val dayFormat = SimpleDateFormat("EEE", Locale("tr")) // "Pazartesi"
+    val monthFormat = SimpleDateFormat("MMM", Locale("tr"))
+    val dayFormat = SimpleDateFormat("EEE", Locale("tr"))
 
-    repeat(365) { // 365 gün ekle
-        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH) // Ayın kaçıncı günü
-        val monthName = monthFormat.format(calendar.time) // Hangi ay
-        val dayName = dayFormat.format(calendar.time) // Haftanın günü
+    repeat(365) {
+        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
+        val monthName = monthFormat.format(calendar.time)
+        val dayName = dayFormat.format(calendar.time)
+        val date = calendar.time
 
-        daysList.add(CalendarDay(dayOfMonth, monthName, dayName))
-        calendar.add(Calendar.DAY_OF_MONTH, 1) // Bir sonraki güne geç
+        daysList.add(CalendarDay(dayOfMonth, monthName, dayName, date))
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
     }
 
     return daysList
 }
+
 
 
 @Composable
@@ -266,27 +310,27 @@ fun AimROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Un
                         text = item.missionAbout ?: "",
                         color = Color.Black,
                         modifier = Modifier.padding(start = 8.dp, top = 4.dp),
-                        fontSize = 6.sp,
+                        fontSize = 12.sp,
                         fontFamily = FontFamily(Font(R.font.sorafont)),
                         fontWeight = FontWeight.Light,
                         lineHeight = TextUnit(8f, TextUnitType.Sp)
                     )
                 }
 
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
                     Text(
-                        text = "Başlama Tarihi: ${item.startTime}",
+                        text = "Başlama Tarihi:${item.startTime}",
                         fontSize = 10.sp,
-                        modifier = Modifier.padding(start = 8.dp, top = 10.dp).weight(1f),
+                        modifier = Modifier.padding(start = 6.dp, end = 8.dp),
                         fontFamily = FontFamily(Font(R.font.sorafont)),
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
                     )
 
                     Text(
-                        text = "Bitiş Tarihi: ${item.endTime}",
+                        text = "Bitiş Tarihi:${item.endTime}",
                         fontSize = 10.sp,
-                        modifier = Modifier.padding(top = 10.dp, end = 24.dp),
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
                         fontFamily = FontFamily(Font(R.font.sorafont)),
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
@@ -297,8 +341,7 @@ fun AimROW(item: Item, UpdateFuncition: (Item) -> Unit, deleteItem: (Item) -> Un
     }
 }
 
-// Günleri oluşturan veri modeli
-data class CalendarDay(val dayOfMonth: Int, val monthName: String, val dayName: String, )
+
 
 @Preview(showBackground = true)
 @Composable
